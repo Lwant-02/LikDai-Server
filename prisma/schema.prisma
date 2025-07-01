@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum LanguageMode {
+  eng
+  shan
+}
+enum AchievementCategory {
+  speed
+  accuracy
+  consistency
+  practice
+}
+
+model User {
+  id              String         @id @default(cuid())
+  email           String         @unique
+  password        String
+  username        String?        @unique
+  preferred_mode  String?        @default("eng") // "eng" or "shan"
+  joined_at       DateTime       @default(now())
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  typingTests     TypingTest[]
+  leaderboard     Leaderboard?
+  achievements    UserAchievement[]
+}
+
+model TypingTest {
+  id              String    @id @default(cuid())
+  userId          String
+  wpm             Int
+  accuracy        Int
+  raw             Int
+  consistency     Int
+  timeTaken       Int      
+  mode            LanguageMode  @default(eng) // "eng" or "shan"
+  test_type       String
+  characters      Int       @default(0)
+  correct_chars   Int       @default(0)
+  createdAt       DateTime  @default(now())
+
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([mode])
+  @@index([createdAt])
+}
+
+model Leaderboard {
+  id              String    @id @default(cuid())
+  user_id         String    @unique
+  wpm             Int
+  accuracy        Int
+  raw             Int
+  consistency     Int
+  mode            LanguageMode  @default(eng) // "eng" or "shan"
+  test_id         String?
+  tests_completed Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user            User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([wpm])
+  @@index([mode])
+}
+
+model Achievement {
+  id              String    @id @default(cuid())
+  name            String    @unique
+  description     String
+  icon            String?
+  requirement     String
+  threshold       Int
+  category        AchievementCategory @default(speed)   // "speed", "accuracy", "consistency", "practice"
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  users           UserAchievement[]
+}
+
+model UserAchievement {
+  id              String    @id @default(cuid())
+  userId          String
+  achievementId   String
+  unlockedAt      DateTime  @default(now())
+  
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement     Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@index([userId])
+  @@index([achievementId])
+}
+
+

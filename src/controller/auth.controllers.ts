@@ -3,6 +3,11 @@ import bcrypt from "bcrypt";
 
 import { loginSchema, registerSchema } from "../schema/auth.schema";
 import prisma from "../lib/db.lib";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+} from "../util/generateToken.util";
+import { NODE_ENV } from "../config/env.config";
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -88,10 +93,29 @@ export const login = async (req: Request, res: Response) => {
       return;
     }
     //Generate refresh and access token
+    const refreshToken = generateRefreshToken(user.id);
+    const accessToken = generateAccessToken(user.id);
+
+    //Store refresh token in database
+    await prisma.refreshToken.create({
+      data: {
+        userId: user.id,
+        token: refreshToken,
+        expiredAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      },
+    });
+    //Set refresh token as httpOnly cookie
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: NODE_ENV === "production",
+      sameSite: "none",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
 
     res.status(200).json({
       isSuccess: true,
-      message: "Login successful",
+      message: "Login successful.",
+      accessToken,
     });
   } catch (error) {
     console.log(error);
@@ -104,7 +128,24 @@ export const login = async (req: Request, res: Response) => {
 };
 
 export const logout = (req: Request, res: Response) => {
-  res.send("Logout");
+  try {
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: NODE_ENV === "production",
+      sameSite: "none",
+    });
+    res.status(200).json({
+      isSuccess: true,
+      message: "Logout successful.",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      isSuccess: false,
+      message: "Internal Server Error",
+    });
+    return;
+  }
 };
 
 export const forgotPassword = (req: Request, res: Response) => {

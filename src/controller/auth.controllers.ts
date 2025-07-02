@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
+import { render } from "@react-email/components";
 
 import { loginSchema, registerSchema } from "../schema/auth.schema";
 import prisma from "../lib/db.lib";
@@ -7,7 +8,9 @@ import {
   generateAccessToken,
   generateRefreshToken,
 } from "../util/generateToken.util";
-import { NODE_ENV } from "../config/env.config";
+import { MAIL_USER, NODE_ENV } from "../config/env.config";
+import WelcomeEmail from "../../react-email-starter/emails/welcome-email";
+import { transporter } from "../lib/nodemailer.lib";
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -44,6 +47,19 @@ export const register = async (req: Request, res: Response) => {
         password: hashedPassword,
       },
     });
+
+    //Send welcome email
+    const emailHtml = await render(WelcomeEmail({ username }));
+
+    const options = {
+      from: MAIL_USER,
+      to: email,
+      subject: "Welcome to LikDai-Pro!",
+      html: emailHtml,
+    };
+    await transporter.sendMail(options);
+
+    //Send the response
     res.status(201).json({
       isSuccess: true,
       message: "User created successfully",

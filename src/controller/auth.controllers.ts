@@ -7,10 +7,12 @@ import prisma from "../lib/db.lib";
 import {
   generateAccessToken,
   generateRefreshToken,
+  generateResetToken,
 } from "../util/generateToken.util";
 import { MAIL_USER, NODE_ENV } from "../config/env.config";
 import WelcomeEmail from "../../react-email-starter/emails/welcome-email";
 import { transporter } from "../lib/nodemailer.lib";
+import ChangePasswordEmail from "../../react-email-starter/emails/change-password";
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -164,6 +166,117 @@ export const logout = (req: Request, res: Response) => {
   }
 };
 
-export const forgotPassword = (req: Request, res: Response) => {
-  res.send("Forgot Password");
+export const forgotPassword = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+    //Check if user exists
+    const user = await prisma.user.findFirst({ where: { email } });
+    if (!user) {
+      res.status(404).json({
+        isSuccess: false,
+        message: "This email is not registered!",
+      });
+      return;
+    }
+
+    //Generate reset token
+    const resetToken = generateResetToken(user.id);
+    //Store reset token in database
+    await prisma.resetToken.create({
+      data: {
+        userId: user.id,
+        token: resetToken,
+        expiredAt: new Date(Date.now() + 10 * 60 * 1000),
+      },
+    });
+
+    //Send reset email
+    const emailHtml = await render(
+      ChangePasswordEmail({
+        username: user.username,
+        resetLink: `http://localhost:3000/change-password?token=${resetToken}`,
+        expiryTime: "10 minutes",
+      })
+    );
+
+    const options = {
+      from: MAIL_USER,
+      to: email,
+      subject: "Reset your LikDai-Pro password",
+      html: emailHtml,
+    };
+    await transporter.sendMail(options);
+
+    //Send the response
+    res.status(200).json({
+      isSuccess: true,
+      message:
+        "Password reset email sent successfully. Please check your email!",
+    });
+    return;
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      isSuccess: false,
+      message: "Internal Server Error",
+    });
+    return;
+  }
+};
+
+export const changePassword = async (req: Request, res: Response) => {
+  try {
+    const { token, password } = req.body;
+    //Check if token is valid
+    const resetToken = await prisma.resetToken.findFirst({
+      where: {
+        token,
+      },
+    });
+    if (!resetToken) {
+      res.status(401).json({
+        isSuccess: false,
+        message: "Invalid token!",
+      });
+      return;
+    }
+    //Check if token is expired
+    if (resetToken.expiredAt < new Date()) {
+      res.status(401).json({
+        isSuccess: false,
+        message: "Token expired!",
+      });
+      return;
+    }
+    //Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    //Update user password
+    await prisma.user.update({
+      where: {
+        id: resetToken.userId,
+      },
+      data: {
+        password: hashedPassword,
+      },
+    });
+    //Delete reset token
+    await prisma.resetToken.delete({
+      where: {
+        id: resetToken.id,
+      },
+    });
+    //Send the response
+    res.status(200).json({
+      isSuccess: true,
+      message: "Password changed successfully.",
+    });
+    return;
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      isSuccess: false,
+      message: "Internal Server Error",
+    });
+    return;
+  }
 };

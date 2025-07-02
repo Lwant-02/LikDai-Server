@@ -2,16 +2,13 @@ import {
   Body,
   Container,
   Head,
-  Heading,
   Html,
-  Img,
   Link,
   Preview,
   Section,
   Text,
   Tailwind,
 } from "@react-email/components";
-import { LogoUrl } from "../../src/constant";
 
 interface ChangePasswordEmailProps {
   username?: string;
@@ -20,9 +17,9 @@ interface ChangePasswordEmailProps {
 }
 
 export const ChangePasswordEmail = ({
-  username = "Typing Enthusiast",
-  resetLink = "https://likdai-pro.com/change-password?token=example-token-12345",
-  expiryTime = "5 minutes",
+  username,
+  resetLink,
+  expiryTime,
 }: ChangePasswordEmailProps) => {
   return (
     <Html>
@@ -48,73 +45,48 @@ export const ChangePasswordEmail = ({
       >
         <Preview>Reset your LikDai-Pro password</Preview>
         <Body className="bg-background text-primary mx-auto my-auto">
-          <Container className="max-w-xl p-8 mx-auto my-10 bg-foreground/5 rounded-lg border border-foreground/10">
-            <Section className="text-center mb-8">
-              <Img
-                src={LogoUrl}
-                width="90"
-                height="90"
-                alt="LikDai-Pro Logo"
-                className="mx-auto"
-              />
-              <Heading className="text-3xl font-bold text-primary mt-4 mb-0">
-                Password Reset
-              </Heading>
-              <Text className="text-lg mt-2 text-orange">
-                Secure Your LikDai-Pro Account
-              </Text>
-            </Section>
-
-            <Section className="mb-8">
+          <Container className="max-w-xl p-8 mx-auto  bg-foreground/5 rounded-lg border border-foreground/10">
+            <Section>
               <Text className="text-base mb-4">
                 Hello{" "}
-                <span className="text-orange font-semibold">{username}</span>,
+                <span className="text-yellow font-semibold">{username}</span>,
               </Text>
               <Text className="text-base mb-4">
-                We received a request to reset your password for your LikDai-Pro
-                account. If you didn't make this request, you can safely ignore
-                this email.
-              </Text>
-              <Text className="text-base mb-4">
-                To reset your password, click the button below:
+                Nobody likes being locked out of their account. We're coming to
+                your rescue - just click the button below to get started. If you
+                didn't request a password reset, you can safely ignore this
+                email.
               </Text>
             </Section>
-
-            <Section className="text-center mb-8">
+            <Section className="my-4 py-3 w-full">
               <Link
                 href={resetLink}
-                className="bg-yellow/20 text-yellow px-6 py-3 rounded-lg font-bold no-underline inline-block hover:bg-yellow/30"
+                className="bg-yellow text-black px-6 w-full py-3 rounded-lg  no-underline "
               >
-                Reset Password
+                Reset Your Password
               </Link>
             </Section>
 
-            <Section className="mb-8">
-              <Text className="text-base mb-2">
-                Or copy and paste this URL into your browser:
+            <Section>
+              <Text className=" mb-2 opacity-50 text-sm">
+                Alternatively, you can copy and paste the link below into your
+                browser:
               </Text>
               <Text className="text-sm text-yellow bg-foreground/30 p-3 rounded-md break-all">
                 {resetLink}
               </Text>
-            </Section>
-
-            <Section className="mb-8 bg-foreground/10 p-4 rounded-md border-l-4 border-yellow">
-              <Text className="text-sm mb-0">
-                <span className="font-bold">Note:</span> This password reset
-                link will expire in {expiryTime}.
+              <Text className=" mb-2 opacity-80 text-sm">
+                Noted that the reset link is valid for {expiryTime} and you will
+                need to request a new one if it expires.
               </Text>
             </Section>
 
-            <Section className="border-t border-foreground/10 pt-8 text-sm text-primary/70">
-              <Text className="mb-4">
-                If you didn't request a password reset, please contact our
-                support team immediately.
-              </Text>
-              <Text className="mb-4">Secure typing!</Text>
+            <Section className="border-t border-foreground/10 pt-3 text-sm text-primary/70">
+              <Text className="mb-4 font-bold">Secure typing!</Text>
               <Text className="font-bold">The LikDai-Pro Team</Text>
             </Section>
 
-            <Section className="text-center text-xs text-primary/50 mt-8">
+            <Section className="text-center text-xs text-primary/50 ">
               <Text>
                 © {new Date().getFullYear()} LikDai-Pro | All rights reserved.
               </Text>

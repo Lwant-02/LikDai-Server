@@ -8,4 +8,6 @@ export const {
   JWT_REFRESH_SECRET,
   JWT_ACCESS_SECRET,
   NODE_ENV,
+  MAIL_USER,
+  MAIL_PASS,
 } = process.env;

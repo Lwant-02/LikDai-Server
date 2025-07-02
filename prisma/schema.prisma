@@ -23,15 +23,15 @@ model User {
   id              String         @id @default(cuid())
   email           String         @unique
   password        String
-  username        String?        @unique
-  preferred_mode  String?        @default("eng") // "eng" or "shan"
-  joined_at       DateTime       @default(now())
+  username        String        @unique
+  joinedAt        DateTime       @default(now())
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 
   typingTests     TypingTest[]
   leaderboard     Leaderboard?
   achievements    UserAchievement[]
+  refreshTokens   RefreshToken?
 }
 
 model TypingTest {
@@ -57,20 +57,19 @@ model TypingTest {
 
 model Leaderboard {
   id              String    @id @default(cuid())
-  user_id         String    @unique
+  userId          String    @unique
   wpm             Int
   accuracy        Int
   raw             Int
   consistency     Int
   mode            LanguageMode  @default(eng) // "eng" or "shan"
-  test_id         String?
   tests_completed Int       @default(0)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  user            User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([user_id])
+  @@index([userId])
   @@index([wpm])
   @@index([mode])
 }
@@ -101,6 +100,20 @@ model UserAchievement {
   @@unique([userId, achievementId])
   @@index([userId])
   @@index([achievementId])
+}
+
+model RefreshToken {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  token           String
+  createdAt       DateTime  @default(now())
+  expiredAt       DateTime
+  updatedAt       DateTime  @updatedAt
+
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  
 }
 
 

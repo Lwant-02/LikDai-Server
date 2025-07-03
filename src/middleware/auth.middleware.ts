@@ -22,6 +22,7 @@ export const verifyAccessToken = async (
     const payload = jwt.verify(token, JWT_ACCESS_SECRET as string) as {
       userId: string;
     };
+    req.userId = payload.userId;
     next();
   } catch (error) {
     console.log(error);

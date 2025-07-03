@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 import { render } from "@react-email/components";
 
 import { loginSchema, registerSchema } from "../schema/auth.schema";
@@ -9,7 +10,7 @@ import {
   generateRefreshToken,
   generateResetToken,
 } from "../util/generateToken.util";
-import { MAIL_USER, NODE_ENV } from "../config/env.config";
+import { JWT_REFRESH_SECRET, MAIL_USER, NODE_ENV } from "../config/env.config";
 import WelcomeEmail from "../../react-email-starter/emails/welcome-email";
 import { transporter } from "../lib/nodemailer.lib";
 import ChangePasswordEmail from "../../react-email-starter/emails/change-password";
@@ -112,13 +113,14 @@ export const login = async (req: Request, res: Response) => {
     }
     //Generate refresh and access token
     const refreshToken = generateRefreshToken(user.id);
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
     const accessToken = generateAccessToken(user.id);
 
     //Store refresh token in database
     await prisma.refreshToken.create({
       data: {
         userId: user.id,
-        token: refreshToken,
+        token: hashedRefreshToken,
         expiredAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       },
     });
@@ -179,13 +181,19 @@ export const forgotPassword = async (req: Request, res: Response) => {
       return;
     }
 
-    //Generate reset token
+    //Generate reset token and Store reset token in database
     const resetToken = generateResetToken(user.id);
-    //Store reset token in database
-    await prisma.resetToken.create({
-      data: {
+    const hashedResetToken = await bcrypt.hash(resetToken, 10);
+
+    await prisma.resetToken.upsert({
+      where: { userId: user.id },
+      update: {
+        token: hashedResetToken,
+        expiredAt: new Date(Date.now() + 10 * 60 * 1000),
+      },
+      create: {
         userId: user.id,
-        token: resetToken,
+        token: hashedResetToken,
         expiredAt: new Date(Date.now() + 10 * 60 * 1000),
       },
     });
@@ -269,6 +277,68 @@ export const changePassword = async (req: Request, res: Response) => {
     res.status(200).json({
       isSuccess: true,
       message: "Password changed successfully.",
+    });
+    return;
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      isSuccess: false,
+      message: "Internal Server Error",
+    });
+    return;
+  }
+};
+
+export const refreshToken = async (req: Request, res: Response) => {
+  try {
+    const { refreshToken } = req.cookies;
+    if (!refreshToken) {
+      res.status(401).json({
+        isSuccess: false,
+        message: "Unauthorized",
+      });
+      return;
+    }
+    //Verify the token
+    const payload = jwt.verify(refreshToken, JWT_REFRESH_SECRET as string) as {
+      userId: string;
+    };
+    //Check if the token is in the database
+    const storedToken = await prisma.refreshToken.findFirst({
+      where: {
+        userId: payload.userId,
+      },
+    });
+    if (!storedToken) {
+      res.status(401).json({
+        isSuccess: false,
+        message: "Unauthorized",
+      });
+      return;
+    }
+    //Compare the token
+    const isTokenValid = await bcrypt.compare(refreshToken, storedToken.token);
+    if (!isTokenValid) {
+      res.status(401).json({
+        isSuccess: false,
+        message: "Unauthorized",
+      });
+      return;
+    }
+    //Check if the token is expired
+    if (storedToken.expiredAt < new Date()) {
+      res.status(401).json({
+        isSuccess: false,
+        message: "Unauthorized",
+      });
+      return;
+    }
+    //Generate new access token
+    const accessToken = generateAccessToken(payload.userId);
+    res.status(200).json({
+      isSuccess: true,
+      message: "Token refreshed.",
+      accessToken,
     });
     return;
   } catch (error) {

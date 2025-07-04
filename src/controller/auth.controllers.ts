@@ -22,8 +22,21 @@ export const register = async (req: Request, res: Response) => {
     if (!isValid.success) {
       res.status(400).json({
         isSuccess: false,
-        message: "Invalid request",
+        message: "Invalid request! Please check your input.",
         errors: isValid.error.errors,
+      });
+      return;
+    }
+    //Check if the username is already taken
+    const isUsernameExists = await prisma.user.findFirst({
+      where: {
+        username,
+      },
+    });
+    if (isUsernameExists) {
+      res.status(409).json({
+        isSuccess: false,
+        message: "Username already taken! Please choose another one.",
       });
       return;
     }
@@ -36,7 +49,7 @@ export const register = async (req: Request, res: Response) => {
     if (isUserExists) {
       res.status(409).json({
         isSuccess: false,
-        message: "User already exists!",
+        message: "User already exists! Please login instead.",
       });
       return;
     }
@@ -98,7 +111,7 @@ export const login = async (req: Request, res: Response) => {
     if (!user) {
       res.status(404).json({
         isSuccess: false,
-        message: "User not found!",
+        message: "User not found! Please register first.",
       });
       return;
     }
@@ -117,8 +130,13 @@ export const login = async (req: Request, res: Response) => {
     const accessToken = generateAccessToken(user.id);
 
     //Store refresh token in database
-    await prisma.refreshToken.create({
-      data: {
+    await prisma.refreshToken.upsert({
+      where: { userId: user.id },
+      update: {
+        token: hashedRefreshToken,
+        expiredAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      },
+      create: {
         userId: user.id,
         token: hashedRefreshToken,
         expiredAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
@@ -128,14 +146,17 @@ export const login = async (req: Request, res: Response) => {
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: NODE_ENV === "production",
-      sameSite: "none",
+      sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     res.status(200).json({
       isSuccess: true,
       message: "Login successful.",
-      accessToken,
+      data: {
+        username: user.username,
+        accessToken,
+      },
     });
   } catch (error) {
     console.log(error);

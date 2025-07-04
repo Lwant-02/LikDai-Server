@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
 import { JWT_ACCESS_SECRET } from "../config/env.config";
+import prisma from "../lib/db.lib";
 
 export const verifyAccessToken = async (
   req: Request,
@@ -18,10 +19,22 @@ export const verifyAccessToken = async (
       });
       return;
     }
-    //Verify the access token and attach the userId to req
+    //Verify the access token
     const payload = jwt.verify(token, JWT_ACCESS_SECRET as string) as {
       userId: string;
     };
+    const user = await prisma.user.findFirst({
+      where: {
+        id: payload.userId,
+      },
+    });
+    if (!user) {
+      res.status(401).json({
+        isSuccess: false,
+        message: "Unauthorized. User not found!",
+      });
+      return;
+    }
     req.userId = payload.userId;
     next();
   } catch (error) {

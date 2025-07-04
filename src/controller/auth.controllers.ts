@@ -154,7 +154,6 @@ export const login = async (req: Request, res: Response) => {
       isSuccess: true,
       message: "Login successful.",
       data: {
-        username: user.username,
         accessToken,
       },
     });
@@ -173,7 +172,7 @@ export const logout = (req: Request, res: Response) => {
     res.clearCookie("refreshToken", {
       httpOnly: true,
       secure: NODE_ENV === "production",
-      sameSite: "none",
+      sameSite: "strict",
     });
     res.status(200).json({
       isSuccess: true,

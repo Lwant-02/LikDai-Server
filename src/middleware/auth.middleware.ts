@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-
+import jwt, { JsonWebTokenError, TokenExpiredError } from "jsonwebtoken";
 import { JWT_ACCESS_SECRET } from "../config/env.config";
 import prisma from "../lib/db.lib";
 
@@ -10,39 +9,59 @@ export const verifyAccessToken = async (
   next: NextFunction
 ) => {
   try {
-    const authHeader = req.headers.authorization;
-    const token = authHeader?.split(" ")[1];
-    if (!token) {
+    const authHeader =
+      typeof req.headers.authorization === "string"
+        ? req.headers.authorization
+        : undefined;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       res.status(401).json({
         isSuccess: false,
-        message: "Unauthorized. Access token is missing!",
+        message: "Unauthorized – missing or malformed Authorization header",
       });
       return;
     }
-    //Verify the access token
-    const payload = jwt.verify(token, JWT_ACCESS_SECRET as string) as {
+
+    const token = authHeader.split(" ")[1];
+
+    const payload = jwt.verify(token, JWT_ACCESS_SECRET!) as {
       userId: string;
     };
-    const user = await prisma.user.findFirst({
-      where: {
-        id: payload.userId,
-      },
+
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId },
     });
+
     if (!user) {
       res.status(401).json({
         isSuccess: false,
-        message: "Unauthorized. User not found!",
+        message: "Unauthorized – user no longer exists",
       });
       return;
     }
     req.userId = payload.userId;
     next();
   } catch (error) {
-    console.log(error);
+    if (error instanceof TokenExpiredError) {
+      res.status(401).json({
+        isSuccess: false,
+        message: "Unauthorized – token expired",
+      });
+      return;
+    }
+
+    if (error instanceof JsonWebTokenError) {
+      res.status(401).json({
+        isSuccess: false,
+        message: `Unauthorized – ${error.message}`,
+      });
+      return;
+    }
+
+    console.error("verifyAccessToken:", error);
     res.status(500).json({
       isSuccess: false,
       message: "Internal Server Error",
     });
-    return;
   }
 };

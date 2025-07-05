@@ -44,7 +44,7 @@ export const ChangePasswordEmail = ({
         }}
       >
         <Preview>Reset your LikDai-Pro password</Preview>
-        <Body className="bg-background text-primary mx-auto my-auto">
+        <Body className="bg-background text-white mx-auto my-auto">
           <Container className="max-w-xl p-8 mx-auto  bg-foreground/5 rounded-lg border border-foreground/10">
             <Section>
               <Text className="text-base mb-4">

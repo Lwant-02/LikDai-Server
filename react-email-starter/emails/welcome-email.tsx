@@ -11,7 +11,6 @@ import {
   Text,
   Tailwind,
 } from "@react-email/components";
-import { LogoUrl } from "../../src/constant";
 
 interface WelcomeEmailProps {
   username: string;
@@ -20,10 +19,6 @@ interface WelcomeEmailProps {
 export const WelcomeEmail = ({
   username = "Typing Enthusiast",
 }: WelcomeEmailProps) => {
-  const baseUrl = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : "http://localhost:3000";
-
   return (
     <Html>
       <Head />
@@ -46,7 +41,7 @@ export const WelcomeEmail = ({
           },
         }}
       >
-        <Body className="bg-background text-primary mx-auto my-auto">
+        <Body className="bg-background text-white mx-auto my-auto">
           <Preview>
             Welcome to LikDai-Pro - Master Shan Typing with Precision and Speed
           </Preview>

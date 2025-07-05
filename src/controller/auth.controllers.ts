@@ -10,7 +10,13 @@ import {
   generateRefreshToken,
   generateResetToken,
 } from "../util/generateToken.util";
-import { JWT_REFRESH_SECRET, MAIL_USER, NODE_ENV } from "../config/env.config";
+import {
+  FRONTEND_URL,
+  JWT_REFRESH_SECRET,
+  JWT_RESET_SECRET,
+  MAIL_USER,
+  NODE_ENV,
+} from "../config/env.config";
 import WelcomeEmail from "../../react-email-starter/emails/welcome-email";
 import { transporter } from "../lib/nodemailer.lib";
 import ChangePasswordEmail from "../../react-email-starter/emails/change-password";
@@ -222,7 +228,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
     const emailHtml = await render(
       ChangePasswordEmail({
         username: user.username,
-        resetLink: `http://localhost:3000/change-password?token=${resetToken}`,
+        resetLink: `${FRONTEND_URL}/change-password?token=${resetToken}`,
         expiryTime: "10 minutes",
       })
     );
@@ -255,10 +261,13 @@ export const forgotPassword = async (req: Request, res: Response) => {
 export const changePassword = async (req: Request, res: Response) => {
   try {
     const { token, password } = req.body;
-    //Check if token is valid
+    //Verify the token
+    const payload = jwt.verify(token, JWT_RESET_SECRET as string) as {
+      userId: string;
+    };
     const resetToken = await prisma.resetToken.findFirst({
       where: {
-        token,
+        userId: payload.userId,
       },
     });
     if (!resetToken) {

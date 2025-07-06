@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE "Stats" ALTER COLUMN "averageWpm" SET DEFAULT 0,
+ALTER COLUMN "bestWpm" SET DEFAULT 0,
+ALTER COLUMN "averageAccuracy" SET DEFAULT 0,
+ALTER COLUMN "testsCompleted" SET DEFAULT 0,
+ALTER COLUMN "totalTimePracticed" SET DEFAULT 0;

@@ -17,6 +17,7 @@ enum AchievementCategory {
   accuracy
   consistency
   practice
+  certificate
 }
 
 model User {
@@ -33,6 +34,7 @@ model User {
   achievements    UserAchievement[]
   refreshTokens   RefreshToken?
   resetTokens     ResetToken?
+  stats           Stats?
 }
 
 model TypingTest {
@@ -78,11 +80,9 @@ model Leaderboard {
 model Achievement {
   id              String    @id @default(cuid())
   name            String    @unique
-  description     String
-  icon            String?
   requirement     String
   threshold       Int
-  category        AchievementCategory @default(speed)   // "speed", "accuracy", "consistency", "practice"
+  category        AchievementCategory @default(speed)   // "speed", "accuracy", "consistency", "practice", "certificate"
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
@@ -101,6 +101,22 @@ model UserAchievement {
   @@unique([userId, achievementId])
   @@index([userId])
   @@index([achievementId])
+}
+
+model Stats{
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  averageWpm      Int @default(0)
+  bestWpm         Int @default(0)
+  averageAccuracy Int @default(0)
+  testsCompleted  Int @default(0)
+  totalTimePracticed Int @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model RefreshToken {

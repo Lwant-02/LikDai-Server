@@ -5,7 +5,7 @@ import prisma from "../lib/db.lib";
 import { NODE_ENV } from "../config/env.config";
 
 //TODO: Add averageWpm to user
-export const getMe = async (req: Request, res: Response) => {
+export const getProfile = async (req: Request, res: Response) => {
   try {
     const { userId } = req;
     const user = await prisma.user.findUnique({
@@ -18,8 +18,11 @@ export const getMe = async (req: Request, res: Response) => {
       },
     });
     //Get total typing tests
-    const totalTests = await prisma.typingTest.count({
+    const totalTests = await prisma.stats.findUnique({
       where: { userId },
+      select: {
+        testsCompleted: true,
+      },
     });
     if (!user) {
       res.status(404).json({
@@ -33,8 +36,41 @@ export const getMe = async (req: Request, res: Response) => {
       message: "User found.",
       data: {
         ...user,
-        totalTests,
+        totalTests: totalTests?.testsCompleted || 0,
       },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      isSuccess: false,
+      message: "Internal Server Error",
+    });
+    return;
+  }
+};
+
+//Need to fix
+export const getAchievements = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req;
+    if (!userId) {
+      res.status(401).json({
+        isSuccess: false,
+        message: "Unauthorized",
+      });
+      return;
+    }
+    const [allAchievements, unlockedAchievements] = await Promise.all([
+      prisma.achievement.findMany(),
+      prisma.userAchievement.findMany({
+        where: { userId },
+        select: { achievementId: true, unlockedAt: true },
+      }),
+    ]);
+    res.status(200).json({
+      isSuccess: true,
+      message: "Achievements found.",
+      data: { allAchievements, unlockedAchievements },
     });
   } catch (error) {
     console.log(error);

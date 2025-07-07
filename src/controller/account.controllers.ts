@@ -121,6 +121,57 @@ export const getHistory = async (req: Request, res: Response) => {
   }
 };
 
+export const getStats = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req;
+    if (!userId) {
+      res.status(401).json({
+        isSuccess: false,
+        message: "Unauthorized",
+      });
+      return;
+    }
+    const stats = await prisma.stats.findUnique({
+      where: { userId },
+      select: {
+        averageWpm: true,
+        bestWpm: true,
+        averageAccuracy: true,
+        testsCompleted: true,
+        totalTimePracticed: true,
+      },
+    });
+    //Get language distribution
+    const totalTests = await prisma.typingTest.count({
+      where: { userId },
+    });
+    const engTests = await prisma.typingTest.count({
+      where: { userId, mode: "eng" },
+    });
+    const shanTests = await prisma.typingTest.count({
+      where: { userId, mode: "shan" },
+    });
+    const engDistribution = (engTests / totalTests) * 100;
+    const shanDistribution = (shanTests / totalTests) * 100;
+    res.status(200).json({
+      isSuccess: true,
+      message: "Stats found.",
+      data: {
+        ...stats,
+        engDistribution,
+        shanDistribution,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      isSuccess: false,
+      message: "Internal Server Error",
+    });
+    return;
+  }
+};
+
 export const updateUsername = async (req: Request, res: Response) => {
   try {
     const { username } = req.body;

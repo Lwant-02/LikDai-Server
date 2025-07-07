@@ -7,6 +7,7 @@ import cookieParser from "cookie-parser";
 import { FRONTEND_URL } from "./config/env.config";
 import authRouter from "./routes/auth.routes";
 import { accountRouter } from "./routes/account.routes";
+import { reportRouter } from "./routes/report.route";
 
 const app = express();
 
@@ -25,5 +26,6 @@ app.use(cookieParser());
 //API Routes
 app.use("/api/auth", authRouter);
 app.use("/api/account", accountRouter);
+app.use("/api/report", reportRouter);
 
 export default app;

@@ -1,0 +1,43 @@
+import { render } from "@react-email/components";
+import { Request, Response } from "express";
+
+import ReportBugEmail from "../../react-email-starter/emails/report-bug";
+import { DEVELOPER_EMAIL, MAIL_USER } from "../config/env.config";
+import { transporter } from "../lib/nodemailer.lib";
+
+export const submitReport = async (req: Request, res: Response) => {
+  try {
+    const { text } = req.body;
+    if (!text) {
+      res.status(400).json({
+        isSuccess: false,
+        message: "Please provide a report.",
+      });
+      return;
+    }
+
+    //Send email to developer
+    const emailHtml = await render(ReportBugEmail({ text }));
+
+    const options = {
+      from: MAIL_USER,
+      to: DEVELOPER_EMAIL,
+      subject: "Report a Bug 🐞",
+      html: emailHtml,
+    };
+
+    await transporter.sendMail(options);
+
+    res.status(200).json({
+      isSuccess: true,
+      message: "Report submitted successfully.",
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      isSuccess: false,
+      message: "Internal Server Error",
+    });
+    return;
+  }
+};

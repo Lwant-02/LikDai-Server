@@ -11,4 +11,5 @@ export const {
   NODE_ENV,
   MAIL_USER,
   MAIL_PASS,
+  DEVELOPER_EMAIL,
 } = process.env;

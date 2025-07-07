@@ -82,6 +82,45 @@ export const getAchievements = async (req: Request, res: Response) => {
   }
 };
 
+export const getHistory = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req;
+    if (!userId) {
+      res.status(401).json({
+        isSuccess: false,
+        message: "Unauthorized",
+      });
+      return;
+    }
+    const recentTests = await prisma.typingTest.findMany({
+      where: { userId },
+      select: {
+        id: true,
+        wpm: true,
+        accuracy: true,
+        mode: true,
+        createdAt: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 5,
+    });
+    res.status(200).json({
+      isSuccess: true,
+      message: "History found.",
+      data: recentTests,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      isSuccess: false,
+      message: "Internal Server Error",
+    });
+    return;
+  }
+};
+
 export const updateUsername = async (req: Request, res: Response) => {
   try {
     const { username } = req.body;

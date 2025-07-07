@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   deleteAccount,
   getAchievements,
+  getHistory,
   getProfile,
   updatePassword,
   updateUsername,
@@ -12,6 +13,7 @@ export const accountRouter: Router = Router();
 
 accountRouter.get("/me", verifyAccessToken, getProfile);
 accountRouter.get("/achievements", verifyAccessToken, getAchievements);
+accountRouter.get("/history", verifyAccessToken, getHistory);
 accountRouter.patch("/update-username", verifyAccessToken, updateUsername);
 accountRouter.patch("/update-password", verifyAccessToken, updatePassword);
 accountRouter.delete("/delete-account", verifyAccessToken, deleteAccount);

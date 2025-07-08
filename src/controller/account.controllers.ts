@@ -24,6 +24,13 @@ export const getProfile = async (req: Request, res: Response) => {
         testsCompleted: true,
       },
     });
+    //Get averageWpm
+    const averageWpm = await prisma.stats.findUnique({
+      where: { userId },
+      select: {
+        averageWpm: true,
+      },
+    });
     if (!user) {
       res.status(404).json({
         isSuccess: false,
@@ -37,6 +44,7 @@ export const getProfile = async (req: Request, res: Response) => {
       data: {
         ...user,
         totalTests: totalTests?.testsCompleted || 0,
+        averageWpm: averageWpm?.averageWpm || 0,
       },
     });
   } catch (error) {
@@ -49,7 +57,6 @@ export const getProfile = async (req: Request, res: Response) => {
   }
 };
 
-//Need to fix
 export const getAchievements = async (req: Request, res: Response) => {
   try {
     const { userId } = req;
@@ -61,7 +68,15 @@ export const getAchievements = async (req: Request, res: Response) => {
       return;
     }
     const [allAchievements, unlockedAchievements] = await Promise.all([
-      prisma.achievement.findMany(),
+      prisma.achievement.findMany({
+        select: {
+          id: true,
+          name: true,
+          requirement: true,
+          threshold: true,
+          category: true,
+        },
+      }),
       prisma.userAchievement.findMany({
         where: { userId },
         select: { achievementId: true, unlockedAt: true },

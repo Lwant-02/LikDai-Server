@@ -4,7 +4,6 @@ import bcrypt from "bcrypt";
 import prisma from "../lib/db.lib";
 import { NODE_ENV } from "../config/env.config";
 
-//TODO: Add averageWpm to user
 export const getProfile = async (req: Request, res: Response) => {
   try {
     const { userId } = req;
@@ -67,25 +66,34 @@ export const getAchievements = async (req: Request, res: Response) => {
       });
       return;
     }
-    const [allAchievements, unlockedAchievements] = await Promise.all([
-      prisma.achievement.findMany({
-        select: {
-          id: true,
-          name: true,
-          requirement: true,
-          threshold: true,
-          category: true,
-        },
-      }),
-      prisma.userAchievement.findMany({
-        where: { userId },
-        select: { achievementId: true, unlockedAt: true },
-      }),
-    ]);
+    const [allAchievements, unlockedAchievements, certificate] =
+      await Promise.all([
+        prisma.achievement.findMany({
+          select: {
+            id: true,
+            name: true,
+            requirement: true,
+            threshold: true,
+            category: true,
+          },
+        }),
+        prisma.userAchievement.findMany({
+          where: { userId },
+          select: { achievementId: true, unlockedAt: true },
+        }),
+        prisma.certificate.findUnique({
+          where: { userId },
+          select: { isSubmitted: true },
+        }),
+      ]);
     res.status(200).json({
       isSuccess: true,
       message: "Achievements found.",
-      data: { allAchievements, unlockedAchievements },
+      data: {
+        allAchievements,
+        unlockedAchievements,
+        isSubmitted: certificate?.isSubmitted || false,
+      },
     });
   } catch (error) {
     console.log(error);
@@ -317,6 +325,75 @@ export const deleteAccount = async (req: Request, res: Response) => {
       message: "Account deleted successfully.",
     });
     return;
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      isSuccess: false,
+      message: "Internal Server Error",
+    });
+    return;
+  }
+};
+
+export const submitCertificate = async (req: Request, res: Response) => {
+  try {
+    const { fullName } = req.body;
+    const { userId } = req;
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!user) {
+      res.status(404).json({
+        isSuccess: false,
+        message: "User not found!",
+      });
+      return;
+    }
+    //Submit certificate
+    await prisma.certificate.create({
+      data: {
+        userId,
+        isSubmitted: true,
+        fullName,
+      },
+    });
+    res.status(200).json({
+      isSuccess: true,
+      message: "Certificate submitted successfully.",
+    });
+    return;
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      isSuccess: false,
+      message: "Internal Server Error",
+    });
+    return;
+  }
+};
+
+export const getCertificate = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req;
+    const certificate = await prisma.certificate.findUnique({
+      where: { userId },
+      select: {
+        createdAt: true,
+        fullName: true,
+      },
+    });
+    if (!certificate) {
+      res.status(404).json({
+        isSuccess: false,
+        message: "Certificate not found!",
+      });
+      return;
+    }
+    res.status(200).json({
+      isSuccess: true,
+      message: "Certificate found.",
+      data: certificate,
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json({

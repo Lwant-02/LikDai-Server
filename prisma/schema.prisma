@@ -35,6 +35,7 @@ model User {
   refreshTokens   RefreshToken?
   resetTokens     ResetToken?
   stats           Stats?
+  certificate    Certificate?
 }
 
 model TypingTest {
@@ -111,6 +112,19 @@ model Stats{
   averageAccuracy Int @default(0)
   testsCompleted  Int @default(0)
   totalTimePracticed Int @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Certificate {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  fullName        String
+  isSubmitted     Boolean   @default(false)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 

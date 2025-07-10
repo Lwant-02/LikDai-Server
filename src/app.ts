@@ -9,6 +9,7 @@ import authRouter from "./routes/auth.routes";
 import { accountRouter } from "./routes/account.routes";
 import { reportRouter } from "./routes/report.route";
 import { leaderboardRouter } from "./routes/leaderboard.route";
+import { profileRouter } from "./routes/profile.routes";
 
 const app = express();
 
@@ -29,5 +30,6 @@ app.use("/api/auth", authRouter);
 app.use("/api/account", accountRouter);
 app.use("/api/report", reportRouter);
 app.use("/api/leaderboard", leaderboardRouter);
+app.use("/api/profile", profileRouter);
 
 export default app;

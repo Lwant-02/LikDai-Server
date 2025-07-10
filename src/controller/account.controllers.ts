@@ -16,20 +16,6 @@ export const getProfile = async (req: Request, res: Response) => {
         joinedAt: true,
       },
     });
-    //Get total typing tests
-    const totalTests = await prisma.stats.findUnique({
-      where: { userId },
-      select: {
-        testsCompleted: true,
-      },
-    });
-    //Get averageWpm
-    const averageWpm = await prisma.stats.findUnique({
-      where: { userId },
-      select: {
-        averageWpm: true,
-      },
-    });
     if (!user) {
       res.status(404).json({
         isSuccess: false,
@@ -37,6 +23,21 @@ export const getProfile = async (req: Request, res: Response) => {
       });
       return;
     }
+    //Get total tests and average wpm
+    const [totalTests, averageWpm] = await Promise.all([
+      prisma.stats.findUnique({
+        where: { userId },
+        select: {
+          testsCompleted: true,
+        },
+      }),
+      prisma.stats.findUnique({
+        where: { userId },
+        select: {
+          averageWpm: true,
+        },
+      }),
+    ]);
     res.status(200).json({
       isSuccess: true,
       message: "User found.",

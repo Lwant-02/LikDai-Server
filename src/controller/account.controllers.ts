@@ -14,6 +14,7 @@ export const getProfile = async (req: Request, res: Response) => {
         username: true,
         email: true,
         joinedAt: true,
+        bio: true,
       },
     });
     if (!user) {
@@ -196,9 +197,9 @@ export const getStats = async (req: Request, res: Response) => {
   }
 };
 
-export const updateUsername = async (req: Request, res: Response) => {
+export const updateProfile = async (req: Request, res: Response) => {
   try {
-    const { username } = req.body;
+    const { username, bio } = req.body;
     const { userId } = req;
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -223,18 +224,19 @@ export const updateUsername = async (req: Request, res: Response) => {
       });
       return;
     }
-    //Update username
+    //Update username and bio
     await prisma.user.update({
       where: {
         id: userId,
       },
       data: {
         username,
+        bio,
       },
     });
     res.status(200).json({
       isSuccess: true,
-      message: "Username updated successfully.",
+      message: "Profile updated successfully.",
     });
     return;
   } catch (error) {

@@ -8,6 +8,7 @@ import { FRONTEND_URL } from "./config/env.config";
 import authRouter from "./routes/auth.routes";
 import { accountRouter } from "./routes/account.routes";
 import { reportRouter } from "./routes/report.route";
+import { leaderboardRouter } from "./routes/leaderboard.route";
 
 const app = express();
 
@@ -27,5 +28,6 @@ app.use(cookieParser());
 app.use("/api/auth", authRouter);
 app.use("/api/account", accountRouter);
 app.use("/api/report", reportRouter);
+app.use("/api/leaderboard", leaderboardRouter);
 
 export default app;

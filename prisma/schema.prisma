@@ -30,7 +30,7 @@ model User {
   updatedAt       DateTime       @updatedAt
 
   typingTests     TypingTest[]
-  leaderboard     Leaderboard?
+  leaderboard     Leaderboard[]
   achievements    UserAchievement[]
   refreshTokens   RefreshToken?
   resetTokens     ResetToken?
@@ -61,7 +61,7 @@ model TypingTest {
 
 model Leaderboard {
   id              String    @id @default(cuid())
-  userId          String    @unique
+  userId          String    
   wpm             Int
   accuracy        Int
   raw             Int
@@ -76,6 +76,7 @@ model Leaderboard {
   @@index([userId])
   @@index([wpm])
   @@index([mode])
+  @@unique([userId, mode])
 }
 
 model Achievement {

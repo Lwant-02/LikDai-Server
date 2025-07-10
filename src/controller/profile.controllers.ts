@@ -12,6 +12,7 @@ export const getPublicProfile = async (req: Request, res: Response) => {
         username: true,
         email: true,
         joinedAt: true,
+        bio: true,
       },
     });
     if (!user) {

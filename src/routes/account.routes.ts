@@ -8,7 +8,7 @@ import {
   getStats,
   submitCertificate,
   updatePassword,
-  updateUsername,
+  updateProfile,
 } from "../controller/account.controllers";
 import { verifyAccessToken } from "../middleware/auth.middleware";
 
@@ -18,7 +18,7 @@ accountRouter.get("/me", verifyAccessToken, getProfile);
 accountRouter.get("/achievements", verifyAccessToken, getAchievements);
 accountRouter.get("/history", verifyAccessToken, getHistory);
 accountRouter.get("/stats", verifyAccessToken, getStats);
-accountRouter.patch("/update-username", verifyAccessToken, updateUsername);
+accountRouter.patch("/update-profile", verifyAccessToken, updateProfile);
 accountRouter.patch("/update-password", verifyAccessToken, updatePassword);
 accountRouter.post("/submit-certificate", verifyAccessToken, submitCertificate);
 accountRouter.get("/certificate", verifyAccessToken, getCertificate);

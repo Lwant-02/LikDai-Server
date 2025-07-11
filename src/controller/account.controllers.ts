@@ -197,9 +197,73 @@ export const getStats = async (req: Request, res: Response) => {
   }
 };
 
-export const updateProfile = async (req: Request, res: Response) => {
+export const updateUsername = async (req: Request, res: Response) => {
   try {
-    const { username, bio } = req.body;
+    const { username } = req.body;
+    const { userId } = req;
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!user) {
+      res.status(404).json({
+        isSuccess: false,
+        message: "User not found!",
+      });
+      return;
+    }
+    //Check if the new username is the same as the old one
+    const isSameAsOldOne = username === user.username;
+    if (isSameAsOldOne) {
+      res.status(400).json({
+        isSuccess: false,
+        message: "New username can not be the same as current one!",
+      });
+      return;
+    }
+    //Check if the username is already taken by other user
+    const isUsernameExists = await prisma.user.findFirst({
+      where: {
+        username,
+        NOT: {
+          id: userId,
+        },
+      },
+    });
+    if (isUsernameExists) {
+      res.status(409).json({
+        isSuccess: false,
+        message: "Username already taken! Please choose another one.",
+      });
+      return;
+    }
+    //Update username
+    await prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        username,
+      },
+    });
+    res.status(200).json({
+      isSuccess: true,
+      message: "Username updated successfully.",
+    });
+    return;
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      isSuccess: false,
+      message: "Internal Server Error",
+    });
+    return;
+  }
+};
+
+export const updateBio = async (req: Request, res: Response) => {
+  try {
+    const { bio } = req.body;
     const { userId } = req;
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -211,32 +275,18 @@ export const updateProfile = async (req: Request, res: Response) => {
       });
       return;
     }
-    //Check if username is already taken
-    const isUsernameExists = await prisma.user.findFirst({
-      where: {
-        username,
-      },
-    });
-    if (isUsernameExists) {
-      res.status(409).json({
-        isSuccess: false,
-        message: "Username already taken! Please choose another one.",
-      });
-      return;
-    }
-    //Update username and bio
+    //Update  bio
     await prisma.user.update({
       where: {
         id: userId,
       },
       data: {
-        username,
         bio,
       },
     });
     res.status(200).json({
       isSuccess: true,
-      message: "Profile updated successfully.",
+      message: "Bio updated successfully.",
     });
     return;
   } catch (error) {

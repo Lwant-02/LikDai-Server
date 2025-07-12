@@ -3,3 +3,5 @@ declare namespace Express {
     userId: string;
   }
 }
+
+type TypingTest = z.infer<typeof typingTestSchema>;

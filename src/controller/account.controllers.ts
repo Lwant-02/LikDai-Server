@@ -129,7 +129,7 @@ export const getHistory = async (req: Request, res: Response) => {
       orderBy: {
         createdAt: "desc",
       },
-      take: 5,
+      take: 10,
     });
     res.status(200).json({
       isSuccess: true,

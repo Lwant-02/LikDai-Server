@@ -10,6 +10,7 @@ import { accountRouter } from "./routes/account.routes";
 import { reportRouter } from "./routes/report.route";
 import { leaderboardRouter } from "./routes/leaderboard.route";
 import { profileRouter } from "./routes/profile.routes";
+import { saveResultRouter } from "./routes/result.route";
 
 const app = express();
 
@@ -31,5 +32,6 @@ app.use("/api/account", accountRouter);
 app.use("/api/report", reportRouter);
 app.use("/api/leaderboard", leaderboardRouter);
 app.use("/api/profile", profileRouter);
+app.use("/api/test", saveResultRouter);
 
 export default app;

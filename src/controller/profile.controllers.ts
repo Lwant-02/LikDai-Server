@@ -147,7 +147,7 @@ export const getPublicHistory = async (req: Request, res: Response) => {
       orderBy: {
         createdAt: "desc",
       },
-      take: 5,
+      take: 10,
     });
     res.status(200).json({
       isSuccess: true,
@@ -196,15 +196,17 @@ export const getPublicStats = async (req: Request, res: Response) => {
       },
     });
     //Get language distribution
-    const totalTests = await prisma.typingTest.count({
-      where: { userId },
-    });
-    const engTests = await prisma.typingTest.count({
-      where: { userId, mode: "eng" },
-    });
-    const shanTests = await prisma.typingTest.count({
-      where: { userId, mode: "shan" },
-    });
+    const [totalTests, engTests, shanTests] = await Promise.all([
+      prisma.typingTest.count({
+        where: { userId },
+      }),
+      prisma.typingTest.count({
+        where: { userId, mode: "eng" },
+      }),
+      prisma.typingTest.count({
+        where: { userId, mode: "shan" },
+      }),
+    ]);
     const engDistribution = (engTests / totalTests) * 100;
     const shanDistribution = (shanTests / totalTests) * 100;
     res.status(200).json({

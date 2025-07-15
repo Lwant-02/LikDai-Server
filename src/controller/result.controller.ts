@@ -140,10 +140,8 @@ export const saveResults = async (req: Request, res: Response) => {
         )
           return true;
         //Practice achievement
-        if (
-          ach.category === "practice" &&
-          stats?.totalTimePracticed! >= ach.threshold
-        )
+        const totalHours = stats?.totalTimePracticed! / 3600;
+        if (ach.category === "practice" && totalHours >= ach.threshold)
           return true;
         //Certificate achivement
         if (ach.category === "certificate" && unlocked.length >= ach.threshold)

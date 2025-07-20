@@ -1,3 +1,5 @@
+import { FRONTEND_URL } from "../config/env.config";
+
 // Email template types
 interface WelcomeEmailProps {
   name: string;
@@ -96,7 +98,7 @@ export const generateResetPasswordEmail = ({
                     We received a request to reset your password for your LikDai-Pro account.
                 </p>
                 <div style="text-align: center; margin: 32px 0;">
-                    <a href="https://likdai-pro.com/reset-password?token=${otp}" style="display: inline-block; background: linear-gradient(135deg, #dcb743 0%, #f59e0b 100%); color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(220, 183, 67, 0.3);">
+                    <a href="${FRONTEND_URL}/reset-password?token=${otp}" style="display: inline-block; background: linear-gradient(135deg, #dcb743 0%, #f59e0b 100%); color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(220, 183, 67, 0.3);">
                         Reset Password
                     </a>
                 </div>
@@ -125,7 +127,7 @@ export const generateResetPasswordEmail = ({
                     This email was sent to ${email}
                 </p>
                 <p style="margin: 0 0 8px 0; font-size: 12px; color: #64748b; text-align: center;">
-                    Visit us at <a href="https://likdai-pro.com" style="color: #1e40af; text-decoration: none;">likdai-pro.com</a>
+                    Visit us at <a href={${FRONTEND_URL}} style="color: #1e40af; text-decoration: none;">{${FRONTEND_URL}}</a>
                 </p>
                 <p style="margin: 0; font-size: 12px; color: #64748b; text-align: center;">
                     This is an automated email, please do not reply.

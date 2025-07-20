@@ -34,7 +34,7 @@ model User {
   leaderboard     Leaderboard[]
   achievements    UserAchievement[]
   refreshTokens   RefreshToken?
-  resetTokens     ResetToken?
+  otp            OTP?
   stats           Stats?
   certificate    Certificate?
 }
@@ -149,10 +149,10 @@ model RefreshToken {
   
 }
 
-model ResetToken {
+model OTP {
   id              String    @id @default(cuid())
   userId          String    @unique
-  token           String
+  otp             String
   createdAt       DateTime  @default(now())
   expiredAt       DateTime
   updatedAt       DateTime  @updatedAt

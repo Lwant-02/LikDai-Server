@@ -1,0 +1,17 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.accountRouter = void 0;
+const express_1 = require("express");
+const account_controllers_1 = require("../controller/account.controllers");
+const auth_middleware_1 = require("../middleware/auth.middleware");
+exports.accountRouter = (0, express_1.Router)();
+exports.accountRouter.get("/me", auth_middleware_1.verifyAccessToken, account_controllers_1.getProfile);
+exports.accountRouter.get("/achievements", auth_middleware_1.verifyAccessToken, account_controllers_1.getAchievements);
+exports.accountRouter.get("/history", auth_middleware_1.verifyAccessToken, account_controllers_1.getHistory);
+exports.accountRouter.get("/stats", auth_middleware_1.verifyAccessToken, account_controllers_1.getStats);
+exports.accountRouter.patch("/update-username", auth_middleware_1.verifyAccessToken, account_controllers_1.updateUsername);
+exports.accountRouter.patch("/update-bio", auth_middleware_1.verifyAccessToken, account_controllers_1.updateBio);
+exports.accountRouter.patch("/update-password", auth_middleware_1.verifyAccessToken, account_controllers_1.updatePassword);
+exports.accountRouter.post("/submit-certificate", auth_middleware_1.verifyAccessToken, account_controllers_1.submitCertificate);
+exports.accountRouter.get("/certificate", auth_middleware_1.verifyAccessToken, account_controllers_1.getCertificate);
+exports.accountRouter.delete("/delete-account", auth_middleware_1.verifyAccessToken, account_controllers_1.deleteAccount);

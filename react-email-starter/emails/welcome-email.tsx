@@ -1,10 +1,9 @@
+import * as React from "react";
 import {
   Body,
   Container,
   Head,
-  Heading,
   Html,
-  Img,
   Link,
   Preview,
   Section,

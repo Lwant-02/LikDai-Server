@@ -23,6 +23,8 @@
     "@types/morgan": "^1.9.10",
     "@types/node": "^24.0.1",
     "@types/nodemailer": "^6.4.17",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
     "prisma": "^6.11.1",
     "ts-node-dev": "^2.0.0",
     "tsx": "^4.20.3",
@@ -38,6 +40,8 @@
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
     "nodemailer": "^7.0.4",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
     "zod": "^3.25.67"
   }
 }

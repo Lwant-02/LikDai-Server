@@ -98,7 +98,7 @@ export const generateResetPasswordEmail = ({
                     We received a request to reset your password for your LikDai-Pro account.
                 </p>
                 <div style="text-align: center; margin: 32px 0;">
-                    <a href="${FRONTEND_URL}/reset-password?token=${otp}" style="display: inline-block; background: linear-gradient(135deg, #dcb743 0%, #f59e0b 100%); color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(220, 183, 67, 0.3);">
+                    <a href="${FRONTEND_URL}/change-password?token=${otp}" style="display: inline-block; background: linear-gradient(135deg, #dcb743 0%, #f59e0b 100%); color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(220, 183, 67, 0.3);">
                         Reset Password
                     </a>
                 </div>

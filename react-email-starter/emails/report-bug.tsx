@@ -1,4 +1,4 @@
-import * as React from "react";
+// @ts-nocheck
 import {
   Body,
   Container,

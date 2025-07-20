@@ -6,16 +6,10 @@ import { loginSchema, registerSchema } from "../schema/auth.schema";
 import prisma from "../lib/db.lib";
 import {
   generateAccessToken,
+  generateOTP,
   generateRefreshToken,
-  generateResetToken,
 } from "../util/generateToken.util";
-import {
-  FRONTEND_URL,
-  JWT_REFRESH_SECRET,
-  JWT_RESET_SECRET,
-  MAIL_USER,
-  NODE_ENV,
-} from "../config/env.config";
+import { JWT_REFRESH_SECRET, MAIL_USER, NODE_ENV } from "../config/env.config";
 import { transporter } from "../lib/nodemailer.lib";
 import {
   generateWelcomeEmail,
@@ -209,33 +203,31 @@ export const forgotPassword = async (req: Request, res: Response) => {
     }
 
     //Generate reset token and Store reset token in database
-    const resetToken = generateResetToken(user.id);
-    const hashedResetToken = await bcrypt.hash(resetToken, 10);
-
-    await prisma.resetToken.upsert({
+    const newOtp = generateOTP();
+    await prisma.oTP.upsert({
       where: { userId: user.id },
       update: {
-        token: hashedResetToken,
-        expiredAt: new Date(Date.now() + 10 * 60 * 1000),
+        otp: newOtp,
+        expiredAt: new Date(Date.now() + 30 * 60 * 1000), //30 minutes
       },
       create: {
         userId: user.id,
-        token: hashedResetToken,
-        expiredAt: new Date(Date.now() + 10 * 60 * 1000),
+        otp: newOtp,
+        expiredAt: new Date(Date.now() + 30 * 60 * 1000),
       },
     });
 
-    //Send reset email
+    //Send otp email
     const emailHtml = generateResetPasswordEmail({
       name: user.username,
       email: email,
-      otp: resetToken,
+      otp: newOtp,
     });
 
     const options = {
       from: MAIL_USER,
       to: email,
-      subject: "Reset your LikDai-Pro password",
+      subject: "Verify the OTP to reset your password",
       html: emailHtml,
     };
     await transporter.sendMail(options);
@@ -243,8 +235,70 @@ export const forgotPassword = async (req: Request, res: Response) => {
     //Send the response
     res.status(200).json({
       isSuccess: true,
-      message:
-        "Password reset email sent successfully. Please check your email!",
+      message: "OTP sent successfully. Please check your email to verify.",
+    });
+    return;
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      isSuccess: false,
+      message: "Internal Server Error",
+    });
+    return;
+  }
+};
+
+export const verifyOtp = async (req: Request, res: Response) => {
+  try {
+    const { email, otp } = req.body;
+    //Check if user exists
+    const user = await prisma.user.findFirst({ where: { email } });
+    if (!user) {
+      res.status(404).json({
+        isSuccess: false,
+        message: "This email is not registered!",
+      });
+      return;
+    }
+    //Check if otp is correct
+    const storedOtp = await prisma.oTP.findFirst({
+      where: {
+        userId: user.id,
+      },
+    });
+    if (!storedOtp) {
+      res.status(401).json({
+        isSuccess: false,
+        message: "Invalid OTP!",
+      });
+      return;
+    }
+    //Check if otp is expired
+    if (storedOtp.expiredAt < new Date()) {
+      res.status(401).json({
+        isSuccess: false,
+        message: "OTP expired!",
+      });
+      return;
+    }
+    //Check if otp is correct
+    if (storedOtp.otp !== otp) {
+      res.status(401).json({
+        isSuccess: false,
+        message: "Invalid OTP!",
+      });
+      return;
+    }
+    //Delete otp
+    await prisma.oTP.delete({
+      where: {
+        userId: user.id,
+      },
+    });
+    //Send the response
+    res.status(200).json({
+      isSuccess: true,
+      message: "OTP verified successfully.",
     });
     return;
   } catch (error) {
@@ -259,28 +313,13 @@ export const forgotPassword = async (req: Request, res: Response) => {
 
 export const changePassword = async (req: Request, res: Response) => {
   try {
-    const { token, password } = req.body;
-    //Verify the token
-    const payload = jwt.verify(token, JWT_RESET_SECRET as string) as {
-      userId: string;
-    };
-    const resetToken = await prisma.resetToken.findFirst({
-      where: {
-        userId: payload.userId,
-      },
-    });
-    if (!resetToken) {
-      res.status(401).json({
+    const { email, password } = req.body;
+    //Check if user exists
+    const user = await prisma.user.findFirst({ where: { email } });
+    if (!user) {
+      res.status(404).json({
         isSuccess: false,
-        message: "Invalid token!",
-      });
-      return;
-    }
-    //Check if token is expired
-    if (resetToken.expiredAt < new Date()) {
-      res.status(401).json({
-        isSuccess: false,
-        message: "Token expired!",
+        message: "This email is not registered!",
       });
       return;
     }
@@ -289,22 +328,72 @@ export const changePassword = async (req: Request, res: Response) => {
     //Update user password
     await prisma.user.update({
       where: {
-        id: resetToken.userId,
+        id: user.id,
       },
       data: {
         password: hashedPassword,
       },
     });
-    //Delete reset token
-    await prisma.resetToken.delete({
-      where: {
-        id: resetToken.id,
-      },
-    });
-    //Send the response
     res.status(200).json({
       isSuccess: true,
       message: "Password changed successfully.",
+    });
+    return;
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      isSuccess: false,
+      message: "Internal Server Error",
+    });
+    return;
+  }
+};
+
+export const resendOtp = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+    //Check if user exists
+    const user = await prisma.user.findFirst({ where: { email } });
+    if (!user) {
+      res.status(404).json({
+        isSuccess: false,
+        message: "This email is not registered!",
+      });
+      return;
+    }
+    //Generate new otp
+    const newOtp = generateOTP();
+    await prisma.oTP.upsert({
+      where: { userId: user.id },
+      update: {
+        otp: newOtp,
+        expiredAt: new Date(Date.now() + 30 * 60 * 1000), //30 minutes
+      },
+      create: {
+        userId: user.id,
+        otp: newOtp,
+        expiredAt: new Date(Date.now() + 30 * 60 * 1000),
+      },
+    });
+    //Send otp email
+    const emailHtml = generateResetPasswordEmail({
+      name: user.username,
+      email: email,
+      otp: newOtp,
+    });
+
+    const options = {
+      from: MAIL_USER,
+      to: email,
+      subject: "Verify the OTP to reset your password",
+      html: emailHtml,
+    };
+    await transporter.sendMail(options);
+
+    //Send the response
+    res.status(200).json({
+      isSuccess: true,
+      message: "OTP sent successfully. Please check your email to verify.",
     });
     return;
   } catch (error) {

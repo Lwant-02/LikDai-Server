@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { render } from "@react-email/components";
 
 import { loginSchema, registerSchema } from "../schema/auth.schema";
 import prisma from "../lib/db.lib";
@@ -17,9 +16,11 @@ import {
   MAIL_USER,
   NODE_ENV,
 } from "../config/env.config";
-import WelcomeEmail from "../../react-email-starter/emails/welcome-email";
 import { transporter } from "../lib/nodemailer.lib";
-import ChangePasswordEmail from "../../react-email-starter/emails/change-password";
+import {
+  generateWelcomeEmail,
+  generateResetPasswordEmail,
+} from "../templates/emailTemplates";
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -71,7 +72,7 @@ export const register = async (req: Request, res: Response) => {
     });
 
     //Send welcome email
-    const emailHtml = await render(WelcomeEmail({ username }));
+    const emailHtml = generateWelcomeEmail({ name: username, email });
 
     const options = {
       from: MAIL_USER,
@@ -225,13 +226,11 @@ export const forgotPassword = async (req: Request, res: Response) => {
     });
 
     //Send reset email
-    const emailHtml = await render(
-      ChangePasswordEmail({
-        username: user.username,
-        resetLink: `${FRONTEND_URL}/change-password?token=${resetToken}`,
-        expiryTime: "10 minutes",
-      })
-    );
+    const emailHtml = generateResetPasswordEmail({
+      name: user.username,
+      email: email,
+      otp: resetToken,
+    });
 
     const options = {
       from: MAIL_USER,

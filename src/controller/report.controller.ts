@@ -1,9 +1,8 @@
-import { render } from "@react-email/components";
 import { Request, Response } from "express";
 
-import ReportBugEmail from "../../react-email-starter/emails/report-bug";
 import { DEVELOPER_EMAIL, MAIL_USER } from "../config/env.config";
 import { transporter } from "../lib/nodemailer.lib";
+import { generateBugReportEmail } from "../templates/emailTemplates";
 
 export const submitReport = async (req: Request, res: Response) => {
   try {
@@ -17,7 +16,7 @@ export const submitReport = async (req: Request, res: Response) => {
     }
 
     //Send email to developer
-    const emailHtml = await render(ReportBugEmail({ text }));
+    const emailHtml = generateBugReportEmail({ text });
 
     const options = {
       from: MAIL_USER,

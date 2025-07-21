@@ -412,7 +412,7 @@ export const refreshToken = async (req: Request, res: Response) => {
     if (!refreshToken) {
       res.status(401).json({
         isSuccess: false,
-        message: "Unauthorized",
+        message: "Unauthorized! No refresh token provided.",
       });
       return;
     }
@@ -429,7 +429,7 @@ export const refreshToken = async (req: Request, res: Response) => {
     if (!storedToken) {
       res.status(401).json({
         isSuccess: false,
-        message: "Unauthorized",
+        message: "Unauthorized! Invalid refresh token.",
       });
       return;
     }
@@ -438,7 +438,7 @@ export const refreshToken = async (req: Request, res: Response) => {
     if (!isTokenValid) {
       res.status(401).json({
         isSuccess: false,
-        message: "Unauthorized",
+        message: "Unauthorized! Token is not the same.",
       });
       return;
     }
@@ -446,7 +446,7 @@ export const refreshToken = async (req: Request, res: Response) => {
     if (storedToken.expiredAt < new Date()) {
       res.status(401).json({
         isSuccess: false,
-        message: "Unauthorized",
+        message: "Unauthorized! Token expired.",
       });
       return;
     }

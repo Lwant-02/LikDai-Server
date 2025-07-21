@@ -147,7 +147,7 @@ export const login = async (req: Request, res: Response) => {
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -173,7 +173,7 @@ export const logout = (req: Request, res: Response) => {
     res.clearCookie("refreshToken", {
       httpOnly: true,
       secure: NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "none",
     });
     res.status(200).json({
       isSuccess: true,

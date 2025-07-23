@@ -175,12 +175,6 @@ export const logout = async (req: Request, res: Response) => {
       secure: NODE_ENV === "production",
       sameSite: "none",
     });
-    //Delete the refresh token from the database
-    await prisma.refreshToken.delete({
-      where: {
-        userId: req.userId,
-      },
-    });
     res.status(200).json({
       isSuccess: true,
       message: "Logout successful.",

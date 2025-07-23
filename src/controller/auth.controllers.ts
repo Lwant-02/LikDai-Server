@@ -168,12 +168,18 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-export const logout = (req: Request, res: Response) => {
+export const logout = async (req: Request, res: Response) => {
   try {
     res.clearCookie("refreshToken", {
       httpOnly: true,
       secure: NODE_ENV === "production",
       sameSite: "none",
+    });
+    //Delete the refresh token from the database
+    await prisma.refreshToken.delete({
+      where: {
+        userId: req.userId,
+      },
     });
     res.status(200).json({
       isSuccess: true,

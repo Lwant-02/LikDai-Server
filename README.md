@@ -1,6 +1,6 @@
 # ⚙️ LikDai-Pro (Backend)
 
-![LikDai-Pro Screenshot](https://res.cloudinary.com/dxmvqasul/image/upload/v1752992434/Screenshot_2568-07-20_at_1.19.15_PM_p7u8gq.png)
+![LikDai-Pro Screenshot](https://res.cloudinary.com/dt28nxrrx/image/upload/v1753285362/Screenshot_2568-07-23_at_10.41.16_PM_epq5ti.png)
 
 The **LikDai-Pro Backend** powers the core functionality of the LikDai-Pro typing tutor app — handling user authentication, typing statistics, leaderboard data, and more.
 

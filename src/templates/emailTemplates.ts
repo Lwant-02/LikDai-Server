@@ -48,7 +48,7 @@ export const generateWelcomeEmail = ({ name, email }: WelcomeEmailProps) => `
                     <li style="margin-bottom: 8px;">🎨 Customize your typing experience</li>
                 </ul>
                 <div style="text-align: center; margin: 32px 0;">
-                    <a href="https://likdai-pro.com/typing-test" style="display: inline-block; background: linear-gradient(135deg, #dcb743 0%, #f59e0b 100%); color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(220, 183, 67, 0.3); transition: all 0.3s ease;">
+                    <a href="${FRONTEND_URL}" style="display: inline-block; background: linear-gradient(135deg, #dcb743 0%, #f59e0b 100%); color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(220, 183, 67, 0.3); transition: all 0.3s ease;">
                         Start Typing Now →
                     </a>
                 </div>
@@ -60,7 +60,7 @@ export const generateWelcomeEmail = ({ name, email }: WelcomeEmailProps) => `
                     This email was sent to ${email}
                 </p>
                 <p style="margin: 0 0 8px 0; font-size: 12px; color: #64748b; text-align: center;">
-                    Visit us at <a href="https://likdai-pro.com" style="color: #1e40af; text-decoration: none;">likdai-pro.com</a>
+                    Visit us at <a href="${FRONTEND_URL}" style="color: #1e40af; text-decoration: none;">LikDai-Pro</a>
                 </p>
                 <p style="margin: 0; font-size: 12px; color: #64748b; text-align: center;">
                     This is an automated email, please do not reply.
@@ -150,10 +150,10 @@ export const generateBugReportEmail = ({ text }: ReportBugProps) => `
         <tr>
             <td style="padding: 32px;">
                 <p style="margin: 0 0 16px 0; font-size: 16px; color: #374151;">
-                    Hello there,
+                    Hey developer,
                 </p>
                 <p style="margin: 0 0 24px 0; font-size: 16px; color: #374151;">
-                    Thank you for reporting a bug! Your feedback helps us improve LikDai-Pro for everyone.
+                    User reported a bug or have a suggestion for LikDai-Pro and below is the detail:
                 </p>
                 <div style="background-color: #1f2937; border-radius: 8px; padding: 20px; margin: 24px 0;">
                     <p style="margin: 0; font-size: 16px; color: #ffffff; white-space: pre-wrap;">${text}</p>
@@ -166,7 +166,7 @@ export const generateBugReportEmail = ({ text }: ReportBugProps) => `
                     Bug report submitted via LikDai-Pro
                 </p>
                 <p style="margin: 0 0 8px 0; font-size: 12px; color: #64748b; text-align: center;">
-                    Visit us at <a href="https://likdai-pro.com" style="color: #1e40af; text-decoration: none;">likdai-pro.com</a>
+                    Visit us at <a href="${FRONTEND_URL}" style="color: #1e40af; text-decoration: none;">LikDai-Pro</a>
                 </p>
                 <p style="margin: 0; font-size: 12px; color: #64748b; text-align: center;">
                     This is an automated email, please do not reply.

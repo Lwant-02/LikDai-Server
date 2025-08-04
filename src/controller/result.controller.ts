@@ -2,6 +2,33 @@ import { Request, Response } from "express";
 import { typingTestSchema } from "../schema/result.schema";
 import prisma from "../lib/db.lib";
 
+// Function to recalculate correct averages from all test data
+const recalculateAverages = async (tx: any, userId: string) => {
+  const allTests = await tx.typingTest.findMany({
+    where: { userId },
+    select: { wpm: true, accuracy: true },
+  });
+
+  if (allTests.length === 0) {
+    return { averageWpm: 0, averageAccuracy: 0, testsCompleted: 0 };
+  }
+
+  const totalWpm = allTests.reduce(
+    (sum: number, test: any) => sum + test.wpm,
+    0
+  );
+  const totalAccuracy = allTests.reduce(
+    (sum: number, test: any) => sum + test.accuracy,
+    0
+  );
+
+  return {
+    averageWpm: totalWpm / allTests.length,
+    averageAccuracy: totalAccuracy / allTests.length,
+    testsCompleted: allTests.length,
+  };
+};
+
 export const saveResults = async (req: Request, res: Response) => {
   try {
     const { userId } = req;
@@ -98,13 +125,24 @@ export const saveResults = async (req: Request, res: Response) => {
 
       //3-Update or create stats
       const stats = await tx.stats.findUnique({ where: { userId: userId } });
-      const newTestCompleted = stats?.testsCompleted! + 1 || 1;
-      const totalWpm = stats?.averageWpm! * stats?.testsCompleted! || 0;
-      const newAverageWpm = (totalWpm + wpm) / newTestCompleted;
-      const newAverageAccuracy = stats?.averageAccuracy
-        ? (stats.averageAccuracy + accuracy) / newTestCompleted
-        : accuracy;
+
+      // Recalculate correct averages from all test data
+      const recalculatedStats = await recalculateAverages(tx, userId);
+
+      const newTestCompleted = recalculatedStats.testsCompleted + 1;
+      const newAverageWpm =
+        (recalculatedStats.averageWpm * recalculatedStats.testsCompleted +
+          wpm) /
+        newTestCompleted;
+      const newAverageAccuracy =
+        (recalculatedStats.averageAccuracy * recalculatedStats.testsCompleted +
+          accuracy) /
+        newTestCompleted;
+
       const newBestWpm = stats?.bestWpm ? Math.max(stats.bestWpm, wpm) : wpm;
+
+      const totalTime = (stats?.totalTimePracticed ?? 0) + timeTaken;
+
       await tx.stats.upsert({
         where: { userId: userId },
         update: {
@@ -112,8 +150,7 @@ export const saveResults = async (req: Request, res: Response) => {
           averageAccuracy: newAverageAccuracy,
           bestWpm: newBestWpm,
           testsCompleted: newTestCompleted,
-          totalTimePracticed:
-            stats?.totalTimePracticed + timeTaken || timeTaken,
+          totalTimePracticed: totalTime,
         },
         create: {
           userId,

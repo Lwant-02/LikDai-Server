@@ -20,6 +20,14 @@ enum AchievementCategory {
   certificate
 }
 
+enum LessonLevel {
+  beginner
+  intermediate
+  advanced
+  quotes
+  music
+}
+
 model User {
   id              String         @id @default(cuid())
   email           String         @unique
@@ -48,7 +56,7 @@ model TypingTest {
   consistency     Int
   timeTaken       Int      
   mode            LanguageMode  @default(eng) // "eng" or "shan"
-  test_type       String
+  lessonLevel       String
   characters      Int       @default(0)
   correct_chars   Int       @default(0)
   createdAt       DateTime  @default(now())
@@ -67,6 +75,7 @@ model Leaderboard {
   accuracy        Int
   raw             Int
   consistency     Int
+  lessonLevel     LessonLevel
   mode            LanguageMode  @default(eng) // "eng" or "shan"
   tests_completed Int       @default(0)
   createdAt       DateTime  @default(now())

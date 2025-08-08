@@ -7,7 +7,13 @@ export const typingTestSchema = z.object({
   consistency: z.number().min(0).max(100),
   timeTaken: z.number().min(0),
   mode: z.enum(["eng", "shan"]),
-  test_type: z.enum(["time", "words", "quote", "custom"]),
+  lessonLevel: z.enum([
+    "beginner",
+    "intermediate",
+    "advanced",
+    "quotes",
+    "music",
+  ]),
   characters: z.number().min(0),
   correct_chars: z.number().min(0),
 });

@@ -5,11 +5,20 @@ import { LanguageMode } from "../../generated/prisma";
 
 export const getLeaderboard = async (req: Request, res: Response) => {
   try {
-    const { mode, total, page } = req.query;
-    const take = Number(total);
+    const { mode, total, page, level } = req.query;
+    const take = Number(total) || 10;
     const skip = (Number(page) - 1) * take;
+
+    // Build dynamic where clause
+    const whereClause: any = {
+      mode: (mode as LanguageMode) || "eng",
+    };
+    if (level) {
+      whereClause.lessonLevel = level;
+    }
+
     const leaderboard = await prisma.leaderboard.findMany({
-      where: { mode: (mode as LanguageMode) || "eng" },
+      where: whereClause,
       select: {
         id: true,
         wpm: true,
@@ -19,6 +28,7 @@ export const getLeaderboard = async (req: Request, res: Response) => {
         tests_completed: true,
         mode: true,
         updatedAt: true,
+        lessonLevel: true,
         user: {
           select: {
             username: true,
@@ -32,9 +42,7 @@ export const getLeaderboard = async (req: Request, res: Response) => {
       skip: skip,
     });
     const count = await prisma.leaderboard.count({
-      where: {
-        mode: mode === "shan" ? "shan" : "eng",
-      },
+      where: whereClause,
     });
     if (!leaderboard) {
       res.status(404).json({

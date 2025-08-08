@@ -39,7 +39,7 @@ export const saveResults = async (req: Request, res: Response) => {
       consistency,
       timeTaken,
       mode,
-      test_type,
+      lessonLevel,
       characters,
       correct_chars,
     } = req.body;
@@ -50,7 +50,7 @@ export const saveResults = async (req: Request, res: Response) => {
       consistency,
       timeTaken,
       mode,
-      test_type,
+      lessonLevel,
       characters,
       correct_chars,
     });
@@ -111,6 +111,7 @@ export const saveResults = async (req: Request, res: Response) => {
             increment: 1,
           },
           updatedAt: new Date(),
+          lessonLevel: lessonLevel,
         },
         create: {
           userId,
@@ -120,6 +121,7 @@ export const saveResults = async (req: Request, res: Response) => {
           consistency: consistency,
           mode: mode,
           tests_completed: 1,
+          lessonLevel: lessonLevel,
         },
       });
 

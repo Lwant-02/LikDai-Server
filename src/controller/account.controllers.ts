@@ -125,6 +125,7 @@ export const getHistory = async (req: Request, res: Response) => {
         accuracy: true,
         mode: true,
         createdAt: true,
+        lessonLevel: true,
       },
       orderBy: {
         createdAt: "desc",

@@ -85,118 +85,125 @@ export const saveResults = async (req: Request, res: Response) => {
     ]);
 
     //Do all the stuff here if the typing test pass
-    await prisma.$transaction(async (tx) => {
-      //1-Save the typing test result
-      await tx.typingTest.create({
-        data: {
-          userId,
-          ...isValid.data,
-        },
-      });
-
-      //2-Update  or create leaderboard
-      await tx.leaderboard.upsert({
-        where: {
-          userId_mode: {
+    await prisma.$transaction(
+      async (tx) => {
+        //1-Save the typing test result
+        await tx.typingTest.create({
+          data: {
             userId,
+            ...isValid.data,
+          },
+        });
+
+        //2-Update  or create leaderboard
+        await tx.leaderboard.upsert({
+          where: {
+            userId_mode: {
+              userId,
+              mode: mode,
+            },
+          },
+          update: {
+            wpm: wpm,
+            accuracy: accuracy,
+            raw: raw,
+            consistency: consistency,
+            tests_completed: {
+              increment: 1,
+            },
+            updatedAt: new Date(),
+            lessonLevel: lessonLevel,
+          },
+          create: {
+            userId,
+            wpm: wpm,
+            accuracy: accuracy,
+            raw: raw,
+            consistency: consistency,
             mode: mode,
+            tests_completed: 1,
+            lessonLevel: lessonLevel,
           },
-        },
-        update: {
-          wpm: wpm,
-          accuracy: accuracy,
-          raw: raw,
-          consistency: consistency,
-          tests_completed: {
-            increment: 1,
+        });
+
+        //3-Update or create stats
+        const stats = await tx.stats.findUnique({ where: { userId: userId } });
+
+        // Recalculate correct averages from all test data
+        const recalculatedStats = await recalculateAverages(tx, userId);
+
+        const newTestCompleted = recalculatedStats.testsCompleted + 1;
+        const newAverageWpm =
+          (recalculatedStats.averageWpm * recalculatedStats.testsCompleted +
+            wpm) /
+          newTestCompleted;
+        const newAverageAccuracy =
+          (recalculatedStats.averageAccuracy *
+            recalculatedStats.testsCompleted +
+            accuracy) /
+          newTestCompleted;
+
+        const newBestWpm = stats?.bestWpm ? Math.max(stats.bestWpm, wpm) : wpm;
+
+        const totalTime = (stats?.totalTimePracticed ?? 0) + timeTaken;
+
+        await tx.stats.upsert({
+          where: { userId: userId },
+          update: {
+            averageWpm: newAverageWpm,
+            averageAccuracy: newAverageAccuracy,
+            bestWpm: newBestWpm,
+            testsCompleted: newTestCompleted,
+            totalTimePracticed: totalTime,
           },
-          updatedAt: new Date(),
-          lessonLevel: lessonLevel,
-        },
-        create: {
-          userId,
-          wpm: wpm,
-          accuracy: accuracy,
-          raw: raw,
-          consistency: consistency,
-          mode: mode,
-          tests_completed: 1,
-          lessonLevel: lessonLevel,
-        },
-      });
-
-      //3-Update or create stats
-      const stats = await tx.stats.findUnique({ where: { userId: userId } });
-
-      // Recalculate correct averages from all test data
-      const recalculatedStats = await recalculateAverages(tx, userId);
-
-      const newTestCompleted = recalculatedStats.testsCompleted + 1;
-      const newAverageWpm =
-        (recalculatedStats.averageWpm * recalculatedStats.testsCompleted +
-          wpm) /
-        newTestCompleted;
-      const newAverageAccuracy =
-        (recalculatedStats.averageAccuracy * recalculatedStats.testsCompleted +
-          accuracy) /
-        newTestCompleted;
-
-      const newBestWpm = stats?.bestWpm ? Math.max(stats.bestWpm, wpm) : wpm;
-
-      const totalTime = (stats?.totalTimePracticed ?? 0) + timeTaken;
-
-      await tx.stats.upsert({
-        where: { userId: userId },
-        update: {
-          averageWpm: newAverageWpm,
-          averageAccuracy: newAverageAccuracy,
-          bestWpm: newBestWpm,
-          testsCompleted: newTestCompleted,
-          totalTimePracticed: totalTime,
-        },
-        create: {
-          userId,
-          averageWpm: newAverageWpm,
-          averageAccuracy: newAverageAccuracy,
-          bestWpm: newBestWpm,
-          testsCompleted: newTestCompleted,
-          totalTimePracticed: timeTaken,
-        },
-      });
-      //4-Check for new achivements unlock
-      const newAchievement = allAchievements.filter((ach) => {
-        if (unlockedIds.includes(ach.id)) return false;
-        //Speed achievement
-        if (ach.category === "speed" && wpm >= ach.threshold) return true;
-        //Accuray achievement
-        if (ach.category === "accuracy" && accuracy >= ach.threshold)
-          return true;
-        //Consistency achivement
-        if (
-          ach.category === "consistency" &&
-          engTotalTest === ach.threshold &&
-          shanTotalTest === ach.threshold
-        )
-          return true;
-        //Practice achievement
-        const totalHours = stats?.totalTimePracticed! / 3600;
-        if (ach.category === "practice" && totalHours >= ach.threshold)
-          return true;
-        //Certificate achivement
-        if (ach.category === "certificate" && unlocked.length >= ach.threshold)
-          return true;
-        return false;
-      });
-      //5-Insert newly unlocked
-      await tx.userAchievement.createMany({
-        data: newAchievement.map((ach) => ({
-          userId,
-          achievementId: ach.id,
-          unlockedAt: new Date(),
-        })),
-        skipDuplicates: true,
-      });
-    });
+          create: {
+            userId,
+            averageWpm: newAverageWpm,
+            averageAccuracy: newAverageAccuracy,
+            bestWpm: newBestWpm,
+            testsCompleted: newTestCompleted,
+            totalTimePracticed: timeTaken,
+          },
+        });
+        //4-Check for new achivements unlock
+        const newAchievement = allAchievements.filter((ach) => {
+          if (unlockedIds.includes(ach.id)) return false;
+          //Speed achievement
+          if (ach.category === "speed" && wpm >= ach.threshold) return true;
+          //Accuray achievement
+          if (ach.category === "accuracy" && accuracy >= ach.threshold)
+            return true;
+          //Consistency achivement
+          if (
+            ach.category === "consistency" &&
+            engTotalTest === ach.threshold &&
+            shanTotalTest === ach.threshold
+          )
+            return true;
+          //Practice achievement
+          const totalHours = stats?.totalTimePracticed! / 3600;
+          if (ach.category === "practice" && totalHours >= ach.threshold)
+            return true;
+          //Certificate achivement
+          if (
+            ach.category === "certificate" &&
+            unlocked.length >= ach.threshold
+          )
+            return true;
+          return false;
+        });
+        //5-Insert newly unlocked
+        await tx.userAchievement.createMany({
+          data: newAchievement.map((ach) => ({
+            userId,
+            achievementId: ach.id,
+            unlockedAt: new Date(),
+          })),
+          skipDuplicates: true,
+        });
+      },
+      { timeout: 10000 }
+    );
     res.status(200).json({
       isSuccess: true,
       message: "Results saved successfully.",

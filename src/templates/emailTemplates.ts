@@ -23,7 +23,7 @@ export const generateWelcomeEmail = ({ name, email }: WelcomeEmailProps) => `
         <tr>
             <td style="padding: 40px 32px; text-align: center; background: linear-gradient(135deg, #1e40af 0%, #dcb743 100%);">
                 <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                    Welcome to LikDai-Pro! 🎉
+                    Welcome to LikDai! 🎉
                 </h1>
                 <p style="margin: 8px 0 0 0; color: #f1f5f9; font-size: 16px; opacity: 0.9;">
                     Master Shan Language Typing
@@ -36,10 +36,10 @@ export const generateWelcomeEmail = ({ name, email }: WelcomeEmailProps) => `
                     Hello <strong style="color: #1e40af;">${name}</strong>,
                 </p>
                 <p style="margin: 0 0 24px 0; font-size: 16px; color: #374151;">
-                    Thank you for joining LikDai-Pro! We're excited to help you master Shan language typing skills.
+                    Thank you for joining LikDai! We're excited to help you master Shan language typing skills.
                 </p>
                 <p style="margin: 0 0 16px 0; font-size: 16px; color: #374151; font-weight: 600;">
-                    With LikDai-Pro, you can:
+                    With LikDai, you can:
                 </p>
                 <ul style="margin: 0 0 24px 0; padding-left: 20px; color: #374151;">
                     <li style="margin-bottom: 8px;">🎯 Practice typing in both English and Shan languages</li>
@@ -60,7 +60,7 @@ export const generateWelcomeEmail = ({ name, email }: WelcomeEmailProps) => `
                     This email was sent to ${email}
                 </p>
                 <p style="margin: 0 0 8px 0; font-size: 12px; color: #64748b; text-align: center;">
-                    Visit us at <a href="${FRONTEND_URL}" style="color: #1e40af; text-decoration: none;">LikDai-Pro</a>
+                    Visit us at <a href="${FRONTEND_URL}" style="color: #1e40af; text-decoration: none;">LikDai</a>
                 </p>
                 <p style="margin: 0; font-size: 12px; color: #64748b; text-align: center;">
                     This is an automated email, please do not reply.
@@ -85,7 +85,7 @@ export const generateResetPasswordEmail = ({
                     🔐 Password Reset
                 </h1>
                 <p style="margin: 8px 0 0 0; color: #f1f5f9; font-size: 16px; opacity: 0.9;">
-                    LikDai-Pro Security
+                    LikDai Security
                 </p>
             </td>
         </tr>
@@ -95,7 +95,7 @@ export const generateResetPasswordEmail = ({
                     Hello <strong style="color: #1e40af;">${name}</strong>,
                 </p>
                 <p style="margin: 0 0 24px 0; font-size: 16px; color: #374151;">
-                    We received a request to reset your password for your LikDai-Pro account.
+                    We received a request to reset your password for your LikDai account.
                 </p>
                 <p style="margin: 0 0 16px 0; font-size: 16px; color: #374151;">
                     Please use the following verification code to reset your password and remember otp is valid for 30 minutes and can be used only once.
@@ -116,13 +116,13 @@ export const generateResetPasswordEmail = ({
                     Secure typing!
                 </p>
                 <p style="margin: 0 0 8px 0; font-size: 12px; color: #64748b; text-align: center; font-weight: 600;">
-                    The LikDai-Pro Team
+                    The LikDai Team
                 </p>
                 <p style="margin: 0 0 8px 0; font-size: 12px; color: #64748b; text-align: center;">
                     This email was sent to ${email}
                 </p>
                 <p style="margin: 0 0 8px 0; font-size: 12px; color: #64748b; text-align: center;">
-                    Visit us at <a href="${FRONTEND_URL}" style="color: #1e40af; text-decoration: none;">LikDai-Pro</a>
+                    Visit us at <a href="${FRONTEND_URL}" style="color: #1e40af; text-decoration: none;">LikDai</a>
                 </p>
                 <p style="margin: 0; font-size: 12px; color: #64748b; text-align: center;">
                     This is an automated email, please do not reply.
@@ -143,7 +143,7 @@ export const generateBugReportEmail = ({ text }: ReportBugProps) => `
                     🐛 Bug Report
                 </h1>
                 <p style="margin: 8px 0 0 0; color: #f1f5f9; font-size: 16px; opacity: 0.9;">
-                    LikDai-Pro Support
+                    LikDai Support
                 </p>
             </td>
         </tr>
@@ -153,7 +153,7 @@ export const generateBugReportEmail = ({ text }: ReportBugProps) => `
                     Hey developer,
                 </p>
                 <p style="margin: 0 0 24px 0; font-size: 16px; color: #374151;">
-                    User reported a bug or have a suggestion for LikDai-Pro and below is the detail:
+                    User reported a bug or have a suggestion for LikDai and below is the detail:
                 </p>
                 <div style="background-color: #1f2937; border-radius: 8px; padding: 20px; margin: 24px 0;">
                     <p style="margin: 0; font-size: 16px; color: #ffffff; white-space: pre-wrap;">${text}</p>
@@ -163,10 +163,10 @@ export const generateBugReportEmail = ({ text }: ReportBugProps) => `
         <tr>
             <td style="padding: 24px 32px; background-color: #f8fafc; border-top: 1px solid #e2e8f0;">
                 <p style="margin: 0 0 8px 0; font-size: 12px; color: #64748b; text-align: center;">
-                    Bug report submitted via LikDai-Pro
+                    Bug report submitted via LikDai
                 </p>
                 <p style="margin: 0 0 8px 0; font-size: 12px; color: #64748b; text-align: center;">
-                    Visit us at <a href="${FRONTEND_URL}" style="color: #1e40af; text-decoration: none;">LikDai-Pro</a>
+                    Visit us at <a href="${FRONTEND_URL}" style="color: #1e40af; text-decoration: none;">LikDai</a>
                 </p>
                 <p style="margin: 0; font-size: 12px; color: #64748b; text-align: center;">
                     This is an automated email, please do not reply.

@@ -5,7 +5,7 @@ import { LanguageMode } from "../../generated/prisma";
 
 export const getLeaderboard = async (req: Request, res: Response) => {
   try {
-    const { mode, total, page, level } = req.query;
+    const { mode, total, page } = req.query;
     const take = Number(total) || 10;
     const skip = (Number(page) - 1) * take;
 
@@ -13,9 +13,6 @@ export const getLeaderboard = async (req: Request, res: Response) => {
     const whereClause: any = {
       mode: (mode as LanguageMode) || "eng",
     };
-    if (level) {
-      whereClause.lessonLevel = level;
-    }
 
     const leaderboard = await prisma.leaderboard.findMany({
       where: whereClause,
@@ -28,7 +25,6 @@ export const getLeaderboard = async (req: Request, res: Response) => {
         tests_completed: true,
         mode: true,
         updatedAt: true,
-        lessonLevel: true,
         user: {
           select: {
             username: true,

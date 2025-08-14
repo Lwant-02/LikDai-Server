@@ -1,10 +1,10 @@
-# ⚙️ LikDai-Pro (Backend)
+# ⚙️ LikDai(Backend)
 
-![LikDai-Pro Screenshot](https://res.cloudinary.com/dt28nxrrx/image/upload/v1753285362/Screenshot_2568-07-23_at_10.41.16_PM_epq5ti.png)
+![LikDai Screenshot](https://res.cloudinary.com/dt28nxrrx/image/upload/v1753285362/Screenshot_2568-07-23_at_10.41.16_PM_epq5ti.png)
 
-The **LikDai-Pro Backend** powers the core functionality of the LikDai-Pro typing tutor app — handling user authentication, typing statistics, leaderboard data, and more.
+The **LikDai Backend** powers the core functionality of the LikDai typing tutor app — handling user authentication, typing statistics, leaderboard data, and more.
 
-This service is built with **Node.js** and **Express.js**, offering a robust and scalable API for the LikDai-Pro frontend.
+This service is built with **Node.js** and **Express.js**, offering a robust and scalable API for the LikDai frontend.
 
 ---
 

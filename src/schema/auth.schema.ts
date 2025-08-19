@@ -3,11 +3,8 @@ import { z } from "zod";
 export const registerSchema = z.object({
   username: z
     .string()
-    .trim()
-    .regex(/^(?=.*[a-z])(?=.*\d)[a-z0-9]+$/, {
-      message:
-        "Username must contain at least one lowercase letter and one number",
-    }),
+    .min(3, { message: "Username must be at least 3 characters long" })
+    .max(20, { message: "Username must be less than 20 characters long" }),
   email: z.string().email({ message: "Invalid email address" }),
   password: z
     .string()

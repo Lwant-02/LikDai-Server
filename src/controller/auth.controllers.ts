@@ -147,7 +147,7 @@ export const login = async (req: Request, res: Response) => {
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: NODE_ENV === "production",
-      sameSite: "none",
+      sameSite: NODE_ENV === "production" ? "none" : "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -173,7 +173,7 @@ export const logout = async (req: Request, res: Response) => {
     res.clearCookie("refreshToken", {
       httpOnly: true,
       secure: NODE_ENV === "production",
-      sameSite: "none",
+      sameSite: NODE_ENV === "production" ? "none" : "strict",
     });
     res.status(200).json({
       isSuccess: true,
@@ -458,6 +458,102 @@ export const refreshToken = async (req: Request, res: Response) => {
       accessToken,
     });
     return;
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      isSuccess: false,
+      message: "Internal Server Error",
+    });
+    return;
+  }
+};
+
+export const googleLogin = async (req: Request, res: Response) => {
+  try {
+    const { email, name } = req.body;
+    //Check if user exists
+    const user = await prisma.user.findFirst({ where: { email } });
+    if (user) {
+      //Generate access token
+      const accessToken = generateAccessToken(user.id);
+      //Generate refresh token
+      const refreshToken = generateRefreshToken(user.id);
+      //Hash refresh token
+      const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+      //Store refresh token in database
+      await prisma.refreshToken.upsert({
+        where: { userId: user.id },
+        update: {
+          token: hashedRefreshToken,
+          expiredAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), //7 days
+        },
+        create: {
+          userId: user.id,
+          token: hashedRefreshToken,
+          expiredAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        },
+      });
+      //Set refresh token as httpOnly cookie
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: NODE_ENV === "production",
+        sameSite: NODE_ENV === "production" ? "none" : "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+      res.status(200).json({
+        isSuccess: true,
+        message: "Login successful.",
+        data: {
+          accessToken,
+        },
+      });
+      return;
+    } else {
+      //Create new user
+      const newUser = await prisma.user.create({
+        data: {
+          email,
+          username: name,
+          password: `GoogleLogin-${Date.now()}`,
+        },
+      });
+      //Generate access token
+      const accessToken = generateAccessToken(newUser.id);
+      //Generate refresh token
+      const refreshToken = generateRefreshToken(newUser.id);
+      //Hash refresh token
+      const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+      //Store refresh token in database
+      await prisma.refreshToken.upsert({
+        where: { userId: newUser.id },
+        update: {
+          token: hashedRefreshToken,
+          expiredAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), //7 days
+        },
+        create: {
+          userId: newUser.id,
+          token: hashedRefreshToken,
+          expiredAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        },
+      });
+
+      //Set refresh token as httpOnly cookie
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: NODE_ENV === "production",
+        sameSite: NODE_ENV === "production" ? "none" : "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+      //Send the response
+      res.status(200).json({
+        isSuccess: true,
+        message: "Login successful.",
+        data: {
+          accessToken,
+        },
+      });
+      return;
+    }
   } catch (error) {
     console.log(error);
     res.status(500).json({

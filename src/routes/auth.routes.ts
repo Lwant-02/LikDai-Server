@@ -8,6 +8,7 @@ import {
   refreshToken,
   resendOtp,
   verifyOtp,
+  googleLogin,
 } from "../controller/auth.controllers";
 
 const authRouter: Router = Router();
@@ -20,5 +21,6 @@ authRouter.post("/change-password", changePassword);
 authRouter.post("/resend-otp", resendOtp);
 authRouter.post("/verify-otp", verifyOtp);
 authRouter.get("/refresh-token", refreshToken);
+authRouter.post("/google-login", googleLogin);
 
 export default authRouter;

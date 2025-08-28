@@ -15,6 +15,7 @@ import {
   generateWelcomeEmail,
   generateResetPasswordEmail,
 } from "../templates/emailTemplates";
+import { generateUsername } from "../util/generateUsername.util";
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -471,89 +472,65 @@ export const refreshToken = async (req: Request, res: Response) => {
 export const googleLogin = async (req: Request, res: Response) => {
   try {
     const { email, name } = req.body;
-    //Check if user exists
-    const user = await prisma.user.findFirst({ where: { email } });
-    if (user) {
-      //Generate access token
-      const accessToken = generateAccessToken(user.id);
-      //Generate refresh token
-      const refreshToken = generateRefreshToken(user.id);
-      //Hash refresh token
-      const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
-      //Store refresh token in database
-      await prisma.refreshToken.upsert({
-        where: { userId: user.id },
-        update: {
-          token: hashedRefreshToken,
-          expiredAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), //7 days
-        },
-        create: {
-          userId: user.id,
-          token: hashedRefreshToken,
-          expiredAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        },
+
+    if (!email || !name) {
+      return res.status(400).json({
+        isSuccess: false,
+        message: "Email and name are required",
       });
-      //Set refresh token as httpOnly cookie
-      res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: NODE_ENV === "production",
-        sameSite: NODE_ENV === "production" ? "none" : "strict",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
-      res.status(200).json({
-        isSuccess: true,
-        message: "Login successful.",
-        data: {
-          accessToken,
-        },
-      });
-      return;
-    } else {
-      //Create new user
-      const newUser = await prisma.user.create({
+    }
+
+    //Try to find user by email
+    let user = await prisma.user.findFirst({
+      where: {
+        email,
+      },
+    });
+    if (!user) {
+      const finalUsername = await generateUsername(name);
+      // Create new user
+      user = await prisma.user.create({
         data: {
           email,
-          username: name,
+          username: finalUsername,
           password: `GoogleLogin-${Date.now()}`,
         },
       });
-      //Generate access token
-      const accessToken = generateAccessToken(newUser.id);
-      //Generate refresh token
-      const refreshToken = generateRefreshToken(newUser.id);
-      //Hash refresh token
-      const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
-      //Store refresh token in database
-      await prisma.refreshToken.upsert({
-        where: { userId: newUser.id },
-        update: {
-          token: hashedRefreshToken,
-          expiredAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), //7 days
-        },
-        create: {
-          userId: newUser.id,
-          token: hashedRefreshToken,
-          expiredAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        },
-      });
-
-      //Set refresh token as httpOnly cookie
-      res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: NODE_ENV === "production",
-        sameSite: NODE_ENV === "production" ? "none" : "strict",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
-      //Send the response
-      res.status(200).json({
-        isSuccess: true,
-        message: "Login successful.",
-        data: {
-          accessToken,
-        },
-      });
-      return;
     }
+    //Generate refresh and access token
+    const refreshToken = generateRefreshToken(user.id);
+    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
+    const accessToken = generateAccessToken(user.id);
+
+    //Store refresh token in database
+    await prisma.refreshToken.upsert({
+      where: { userId: user.id },
+      update: {
+        token: hashedRefreshToken,
+        expiredAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      },
+      create: {
+        userId: user.id,
+        token: hashedRefreshToken,
+        expiredAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      },
+    });
+
+    //Set refresh token as httpOnly cookie
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: NODE_ENV === "production",
+      sameSite: NODE_ENV === "production" ? "none" : "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+    res.status(200).json({
+      isSuccess: true,
+      message: "Login successful.",
+      data: {
+        accessToken,
+      },
+    });
+    return;
   } catch (error) {
     console.log(error);
     res.status(500).json({

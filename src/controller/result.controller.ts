@@ -96,35 +96,65 @@ export const saveResults = async (req: Request, res: Response) => {
         });
 
         //2-Update  or create leaderboard
-        await tx.leaderboard.upsert({
+        const existingLeaderboard = await tx.leaderboard.findUnique({
           where: {
             userId_mode: {
               userId,
               mode: mode,
             },
           },
-          update: {
-            wpm: wpm,
-            accuracy: accuracy,
-            raw: raw,
-            consistency: consistency,
-            tests_completed: {
-              increment: 1,
-            },
-            updatedAt: new Date(),
-            lessonLevel: lessonLevel,
-          },
-          create: {
-            userId,
-            wpm: wpm,
-            accuracy: accuracy,
-            raw: raw,
-            consistency: consistency,
-            mode: mode,
-            tests_completed: 1,
-            lessonLevel: lessonLevel,
-          },
         });
+        if (existingLeaderboard) {
+          if (wpm > existingLeaderboard.wpm) {
+            await tx.leaderboard.update({
+              where: {
+                userId_mode: {
+                  userId,
+                  mode: mode,
+                },
+              },
+              data: {
+                wpm,
+                accuracy,
+                raw,
+                consistency,
+                tests_completed: {
+                  increment: 1,
+                },
+                updatedAt: new Date(),
+                lessonLevel,
+              },
+            });
+          } else {
+            await tx.leaderboard.update({
+              where: {
+                userId_mode: {
+                  userId,
+                  mode: mode,
+                },
+              },
+              data: {
+                tests_completed: {
+                  increment: 1,
+                },
+                updatedAt: new Date(),
+              },
+            });
+          }
+        } else {
+          await tx.leaderboard.create({
+            data: {
+              userId,
+              wpm,
+              accuracy,
+              raw,
+              consistency,
+              mode,
+              tests_completed: 1,
+              lessonLevel,
+            },
+          });
+        }
 
         //3-Update or create stats
         const stats = await tx.stats.findUnique({ where: { userId: userId } });
@@ -132,7 +162,7 @@ export const saveResults = async (req: Request, res: Response) => {
         // Recalculate correct averages from all test data
         const recalculatedStats = await recalculateAverages(tx, userId);
 
-        const newTestCompleted = recalculatedStats.testsCompleted + 1;
+        const newTestCompleted = recalculatedStats.testsCompleted;
         const newAverageWpm =
           (recalculatedStats.averageWpm * recalculatedStats.testsCompleted +
             wpm) /

@@ -474,10 +474,11 @@ export const googleLogin = async (req: Request, res: Response) => {
     const { email, name } = req.body;
 
     if (!email || !name) {
-      return res.status(400).json({
+      res.status(400).json({
         isSuccess: false,
         message: "Email and name are required",
       });
+      return;
     }
 
     //Try to find user by email

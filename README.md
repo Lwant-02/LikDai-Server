@@ -45,8 +45,8 @@ You need to have the following software installed on your machine:
 
 1.  **Clone the Repository**
     ```sh
-    git clone [https://github.com/your-username/likdai-backend.git](https://github.com/your-username/likdai-backend.git)
-    cd likdai-backend
+    git clone https://github.com/Lwant-02/LikDai-Server.git
+    cd LikDai-Server
     ```
 
 2.  **Install Dependencies**

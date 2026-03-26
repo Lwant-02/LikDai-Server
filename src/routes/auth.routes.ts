@@ -10,17 +10,20 @@ import {
   verifyOtp,
   googleLogin,
 } from "../controller/auth.controllers";
+import { createRateLimiter } from "../lib/rate.limit";
 
 const authRouter: Router = Router();
 
-authRouter.post("/register", register);
-authRouter.post("/login", login);
+const authLimiter = createRateLimiter({});
+
+authRouter.post("/register", authLimiter, register);
+authRouter.post("/login", authLimiter, login);
 authRouter.post("/logout", logout);
 authRouter.post("/forgot-password", forgotPassword);
 authRouter.post("/change-password", changePassword);
-authRouter.post("/resend-otp", resendOtp);
+authRouter.post("/resend-otp", authLimiter, resendOtp);
 authRouter.post("/verify-otp", verifyOtp);
 authRouter.get("/refresh-token", refreshToken);
-authRouter.post("/google-login", googleLogin);
+authRouter.post("/google-login", authLimiter, googleLogin);
 
 export default authRouter;

@@ -72,7 +72,7 @@ export const register = async (req: Request, res: Response) => {
     const options = {
       from: MAIL_USER,
       to: email,
-      subject: "Welcome to LikDai-Pro!",
+      subject: "Welcome to LikDai!",
       html: emailHtml,
     };
     await transporter.sendMail(options);

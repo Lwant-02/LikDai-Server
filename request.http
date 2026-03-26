@@ -1,0 +1,85 @@
+### Test Login rate limit
+POST http://localhost:8001/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123"
+}
+
+### Test Register rate limit
+POST http://localhost:8001/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "email": "test@example.com",
+  "password": "password123"
+}
+
+### Test Resend OTP rate limit
+POST http://localhost:8001/api/auth/resend-otp
+Content-Type: application/json
+
+{
+  "email": "test@example.com"
+}
+
+### Test Bug Report rate limit
+POST http://localhost:8001/api/report/submit
+Content-Type: application/json
+
+{
+  "text": "This is a bug report for testing rate limiting."
+}
+
+### Test Save Results rate limit (Requires Bearer Token)
+POST http://localhost:8001/api/test/save-results
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbW43OGxubjMwMDAwc3cxeng4YXdiOTI4IiwiaWF0IjoxNzc0NTE2NDkzLCJleHAiOjE3NzQ1MTczOTN9.0GtG5c49JxHMEbw6aaSTKkypJcf1kwwPuvzyB6cl4Mk
+
+{
+  "wpm": 60,
+  "accuracy": 95,
+  "raw": 65,
+  "consistency": 85,
+  "timeTaken": 60,
+  "mode": "eng",
+  "lessonLevel": "beginner",
+  "characters": 300,
+  "correct_chars": 285
+}
+
+### Test Save Results with unrealistic WPM (Should fail)
+POST http://localhost:8001/api/test/save-results
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbW43OGxubjMwMDAwc3cxeng4YXdiOTI4IiwiaWF0IjoxNzc0NTE2NDkzLCJleHAiOjE3NzQ1MTczOTN9.0GtG5c49JxHMEbw6aaSTKkypJcf1kwwPuvzyB6cl4Mk
+
+{
+  "wpm": 300,
+  "accuracy": 95,
+  "raw": 310,
+  "consistency": 85,
+  "timeTaken": 60,
+  "mode": "eng",
+  "lessonLevel": "beginner",
+  "characters": 300,
+  "correct_chars": 285
+}
+
+### Test Save Results with inconsistent data (Should fail)
+POST http://localhost:8001/api/test/save-results
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbW43OGxubjMwMDAwc3cxeng4YXdiOTI4IiwiaWF0IjoxNzc0NTE2NDkzLCJleHAiOjE3NzQ1MTczOTN9.0GtG5c49JxHMEbw6aaSTKkypJcf1kwwPuvzyB6cl4Mk
+
+{
+  "wpm": 100,
+  "accuracy": 95,
+  "raw": 105,
+  "consistency": 85,
+  "timeTaken": 60,
+  "mode": "eng",
+  "lessonLevel": "beginner",
+  "characters": 50,
+  "correct_chars": 48
+}

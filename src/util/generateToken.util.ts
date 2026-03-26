@@ -10,7 +10,7 @@ export const generateRefreshToken = (userId: string): string => {
 
 export const generateAccessToken = (userId: string): string => {
   return jwt.sign({ userId }, JWT_ACCESS_SECRET as string, {
-    expiresIn: "15m",
+    expiresIn: "5m",
   });
 };
 

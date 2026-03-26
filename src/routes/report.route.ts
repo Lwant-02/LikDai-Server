@@ -1,7 +1,10 @@
 import { Router } from "express";
 
 import { submitReport } from "../controller/report.controller";
+import { createRateLimiter } from "../lib/rate.limit";
 
 export const reportRouter: Router = Router();
 
-reportRouter.post("/submit", submitReport);
+const reportLimiter = createRateLimiter({});
+
+reportRouter.post("/submit", reportLimiter, submitReport);

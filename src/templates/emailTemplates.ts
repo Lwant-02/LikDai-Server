@@ -14,6 +14,7 @@ interface ResetPasswordProps {
 
 interface ReportBugProps {
   text: string;
+  email: string;
 }
 
 // Welcome Email Template
@@ -134,7 +135,7 @@ export const generateResetPasswordEmail = ({
 `;
 
 // Bug Report Email Template
-export const generateBugReportEmail = ({ text }: ReportBugProps) => `
+export const generateBugReportEmail = ({ text, email }: ReportBugProps) => `
 <div style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #1a1a1a; max-width: 600px; margin: 0 auto; padding: 0;">
     <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08); border: 1px solid #eaeaea;">
         <tr>
@@ -155,6 +156,9 @@ export const generateBugReportEmail = ({ text }: ReportBugProps) => `
                 <p style="margin: 0 0 24px 0; font-size: 16px; color: #374151;">
                     User reported a bug or have a suggestion for LikDai and below is the detail:
                 </p>
+                 <div style="background-color: #1f2937; border-radius: 8px; padding: 20px; margin: 24px 0;">
+                 <p style="margin: 0; font-size: 16px; color: #ffffff; white-space: pre-wrap;">Email: ${email}</p>
+                </div>
                 <div style="background-color: #1f2937; border-radius: 8px; padding: 20px; margin: 24px 0;">
                     <p style="margin: 0; font-size: 16px; color: #ffffff; white-space: pre-wrap;">${text}</p>
                 </div>

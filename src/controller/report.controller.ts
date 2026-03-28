@@ -6,17 +6,17 @@ import { generateBugReportEmail } from "../templates/emailTemplates";
 
 export const submitReport = async (req: Request, res: Response) => {
   try {
-    const { text } = req.body;
-    if (!text) {
+    const { text, email } = req.body;
+    if (!text || !email) {
       res.status(400).json({
         isSuccess: false,
-        message: "Please provide a report.",
+        message: "Please provide a report and email.",
       });
       return;
     }
 
     //Send email to developer
-    const emailHtml = generateBugReportEmail({ text });
+    const emailHtml = generateBugReportEmail({ text, email });
 
     const options = {
       from: MAIL_USER,
